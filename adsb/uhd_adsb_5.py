@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Uhd Adsb 5
-# Generated: Wed Dec 14 17:38:58 2016
+# Generated: Thu Dec 22 10:50:58 2016
 ##################################################
 
 if __name__ == '__main__':
@@ -17,6 +17,7 @@ if __name__ == '__main__':
             print "Warning: failed to XInitThreads()"
 
 from PyQt4 import Qt
+from baz import message_server
 from gnuradio import blocks
 from gnuradio import digital
 from gnuradio import eng_notation
@@ -29,7 +30,6 @@ from optparse import OptionParser
 import adsb
 import sip
 import sys
-from gnuradio import qtgui
 
 
 class uhd_adsb_5(gr.top_block, Qt.QWidget):
@@ -38,7 +38,6 @@ class uhd_adsb_5(gr.top_block, Qt.QWidget):
         gr.top_block.__init__(self, "Uhd Adsb 5")
         Qt.QWidget.__init__(self)
         self.setWindowTitle("Uhd Adsb 5")
-        qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
         except:
@@ -75,7 +74,7 @@ class uhd_adsb_5(gr.top_block, Qt.QWidget):
         ##################################################
         # Message Queues
         ##################################################
-        adsb_decoder_0_msgq_out = blocks_message_source_0_msgq_in = gr.msg_queue(2)
+        adsb_decoder_0_msgq_out = baz_message_server_0_msgq_in = gr.msg_queue(2)
         adsb_framer_0_msgq_out = adsb_decoder_0_msgq_in = gr.msg_queue(2)
 
         ##################################################
@@ -103,19 +102,19 @@ class uhd_adsb_5(gr.top_block, Qt.QWidget):
         )
         self.qtgui_time_sink_x_0_0.set_update_time(0.010)
         self.qtgui_time_sink_x_0_0.set_y_axis(0, 1.2)
-
+        
         self.qtgui_time_sink_x_0_0.set_y_label('Amplitude', "")
-
+        
         self.qtgui_time_sink_x_0_0.enable_tags(-1, True)
         self.qtgui_time_sink_x_0_0.set_trigger_mode(qtgui.TRIG_MODE_TAG, qtgui.TRIG_SLOPE_POS, .00001, .00002, 0, "adsb_preamble")
         self.qtgui_time_sink_x_0_0.enable_autoscale(False)
         self.qtgui_time_sink_x_0_0.enable_grid(False)
         self.qtgui_time_sink_x_0_0.enable_axis_labels(True)
         self.qtgui_time_sink_x_0_0.enable_control_panel(False)
-
+        
         if not True:
           self.qtgui_time_sink_x_0_0.disable_legend()
-
+        
         labels = ['pre', 'post', '', '', '',
                   '', '', '', '', '']
         widths = [1, 1, 1, 1, 1,
@@ -128,7 +127,7 @@ class uhd_adsb_5(gr.top_block, Qt.QWidget):
                    -1, -1, -1, -1, -1]
         alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
                   1.0, 1.0, 1.0, 1.0, 1.0]
-
+        
         for i in xrange(1):
             if len(labels[i]) == 0:
                 self.qtgui_time_sink_x_0_0.set_line_label(i, "Data {0}".format(i))
@@ -139,7 +138,7 @@ class uhd_adsb_5(gr.top_block, Qt.QWidget):
             self.qtgui_time_sink_x_0_0.set_line_style(i, styles[i])
             self.qtgui_time_sink_x_0_0.set_line_marker(i, markers[i])
             self.qtgui_time_sink_x_0_0.set_line_alpha(i, alphas[i])
-
+        
         self._qtgui_time_sink_x_0_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_0_win, 4,0,1,4)
         self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
@@ -150,19 +149,19 @@ class uhd_adsb_5(gr.top_block, Qt.QWidget):
         )
         self.qtgui_time_sink_x_0.set_update_time(0.010)
         self.qtgui_time_sink_x_0.set_y_axis(-1, 1)
-
+        
         self.qtgui_time_sink_x_0.set_y_label('Amplitude', "")
-
+        
         self.qtgui_time_sink_x_0.enable_tags(-1, True)
         self.qtgui_time_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, .1, .00002, 0, "")
         self.qtgui_time_sink_x_0.enable_autoscale(False)
         self.qtgui_time_sink_x_0.enable_grid(False)
         self.qtgui_time_sink_x_0.enable_axis_labels(True)
         self.qtgui_time_sink_x_0.enable_control_panel(False)
-
+        
         if not True:
           self.qtgui_time_sink_x_0.disable_legend()
-
+        
         labels = ['pre', 'post', '', '', '',
                   '', '', '', '', '']
         widths = [1, 1, 1, 1, 1,
@@ -175,7 +174,7 @@ class uhd_adsb_5(gr.top_block, Qt.QWidget):
                    -1, -1, -1, -1, -1]
         alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
                   1.0, 1.0, 1.0, 1.0, 1.0]
-
+        
         for i in xrange(2):
             if len(labels[i]) == 0:
                 self.qtgui_time_sink_x_0.set_line_label(i, "Data {0}".format(i))
@@ -186,18 +185,17 @@ class uhd_adsb_5(gr.top_block, Qt.QWidget):
             self.qtgui_time_sink_x_0.set_line_style(i, styles[i])
             self.qtgui_time_sink_x_0.set_line_marker(i, markers[i])
             self.qtgui_time_sink_x_0.set_line_alpha(i, alphas[i])
-
+        
         self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_win, 0,0,4,1)
         self.digital_correlate_access_code_tag_bb_0 = digital.correlate_access_code_tag_bb('1010000101000000', 0, 'adsb_preamble')
         self.digital_binary_slicer_fb_0 = digital.binary_slicer_fb()
         self.dc_blocker_xx_0 = filter.dc_blocker_ff(4, True)
         self.blocks_uchar_to_float_0 = blocks.uchar_to_float()
-        self.blocks_message_source_0 = blocks.message_source(gr.sizeof_char*1, blocks_message_source_0_msgq_in)
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/leffke/sandbox/adsb/adsb_20161214_2M_2.32fc', False)
-        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, '/dev/stdout', True)
-        self.blocks_file_sink_0.set_unbuffered(True)
+        self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/zleffke/workspace/rocksat/2017/waveforms/captures/adsb_20161212_2M_2.32fc', False)
         self.blocks_complex_to_mag_squared_0 = blocks.complex_to_mag_squared(1)
+        self.baz_message_server_0 = message_server.message_server(msgq=baz_message_server_0_msgq_in, port=30004)
         self._alpha_tool_bar = Qt.QToolBar(self)
         self._alpha_tool_bar.addWidget(Qt.QLabel("alpha"+": "))
         self._alpha_line_edit = Qt.QLineEdit(str(self.alpha))
@@ -206,21 +204,21 @@ class uhd_adsb_5(gr.top_block, Qt.QWidget):
         	lambda: self.set_alpha(eng_notation.str_to_num(str(self._alpha_line_edit.text().toAscii()))))
         self.top_grid_layout.addWidget(self._alpha_tool_bar, 1,4,1,2)
         self.adsb_framer_0 = adsb.framer(tx_msgq=adsb_framer_0_msgq_out)
-        self.adsb_decoder_0 = adsb.decoder(rx_msgq=adsb_decoder_0_msgq_in,tx_msgq=adsb_decoder_0_msgq_out,output_type="csv",check_parity=True)
+        self.adsb_decoder_0 = adsb.decoder(rx_msgq=adsb_decoder_0_msgq_in,tx_msgq=adsb_decoder_0_msgq_out,output_type="hex",check_parity=True)
 
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.dc_blocker_xx_0, 0))
-        self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.qtgui_time_sink_x_0, 1))
-        self.connect((self.blocks_file_source_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
-        self.connect((self.blocks_message_source_0, 0), (self.blocks_file_sink_0, 0))
-        self.connect((self.blocks_uchar_to_float_0, 0), (self.qtgui_time_sink_x_0_0, 0))
-        self.connect((self.dc_blocker_xx_0, 0), (self.digital_binary_slicer_fb_0, 0))
-        self.connect((self.dc_blocker_xx_0, 0), (self.qtgui_time_sink_x_0, 0))
-        self.connect((self.digital_binary_slicer_fb_0, 0), (self.digital_correlate_access_code_tag_bb_0, 0))
-        self.connect((self.digital_correlate_access_code_tag_bb_0, 0), (self.adsb_framer_0, 0))
-        self.connect((self.digital_correlate_access_code_tag_bb_0, 0), (self.blocks_uchar_to_float_0, 0))
+        self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.dc_blocker_xx_0, 0))    
+        self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.qtgui_time_sink_x_0, 1))    
+        self.connect((self.blocks_file_source_0, 0), (self.blocks_throttle_0, 0))    
+        self.connect((self.blocks_throttle_0, 0), (self.blocks_complex_to_mag_squared_0, 0))    
+        self.connect((self.blocks_uchar_to_float_0, 0), (self.qtgui_time_sink_x_0_0, 0))    
+        self.connect((self.dc_blocker_xx_0, 0), (self.digital_binary_slicer_fb_0, 0))    
+        self.connect((self.dc_blocker_xx_0, 0), (self.qtgui_time_sink_x_0, 0))    
+        self.connect((self.digital_binary_slicer_fb_0, 0), (self.digital_correlate_access_code_tag_bb_0, 0))    
+        self.connect((self.digital_correlate_access_code_tag_bb_0, 0), (self.adsb_framer_0, 0))    
+        self.connect((self.digital_correlate_access_code_tag_bb_0, 0), (self.blocks_uchar_to_float_0, 0))    
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "uhd_adsb_5")
@@ -247,6 +245,7 @@ class uhd_adsb_5(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self.qtgui_time_sink_x_0_0.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
+        self.blocks_throttle_0.set_sample_rate(self.samp_rate)
 
     def get_rx_gain(self):
         return self.rx_gain

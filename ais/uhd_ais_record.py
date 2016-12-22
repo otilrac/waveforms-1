@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Uhd Ais Record
-# Generated: Mon Dec 19 13:32:06 2016
+# Generated: Wed Dec 21 17:19:55 2016
 ##################################################
 
 if __name__ == '__main__':
@@ -26,7 +26,6 @@ from gnuradio.filter import firdes
 from optparse import OptionParser
 import sip
 import sys
-from gnuradio import qtgui
 
 
 class uhd_ais_record(gr.top_block, Qt.QWidget):
@@ -35,7 +34,6 @@ class uhd_ais_record(gr.top_block, Qt.QWidget):
         gr.top_block.__init__(self, "Uhd Ais Record")
         Qt.QWidget.__init__(self)
         self.setWindowTitle("Uhd Ais Record")
-        qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
         except:
@@ -83,13 +81,13 @@ class uhd_ais_record(gr.top_block, Qt.QWidget):
         self.qtgui_waterfall_sink_x_0.set_update_time(0.01)
         self.qtgui_waterfall_sink_x_0.enable_grid(False)
         self.qtgui_waterfall_sink_x_0.enable_axis_labels(True)
-
+        
         if not True:
           self.qtgui_waterfall_sink_x_0.disable_legend()
-
+        
         if "complex" == "float" or "complex" == "msg_float":
           self.qtgui_waterfall_sink_x_0.set_plot_pos_half(not True)
-
+        
         labels = ['', '', '', '', '',
                   '', '', '', '', '']
         colors = [0, 0, 0, 0, 0,
@@ -103,9 +101,9 @@ class uhd_ais_record(gr.top_block, Qt.QWidget):
                 self.qtgui_waterfall_sink_x_0.set_line_label(i, labels[i])
             self.qtgui_waterfall_sink_x_0.set_color_map(i, colors[i])
             self.qtgui_waterfall_sink_x_0.set_line_alpha(i, alphas[i])
-
+        
         self.qtgui_waterfall_sink_x_0.set_intensity_range(-120, -80)
-
+        
         self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_0_win, 0,0,4,4)
         self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
@@ -125,13 +123,13 @@ class uhd_ais_record(gr.top_block, Qt.QWidget):
         self.qtgui_freq_sink_x_0.set_fft_average(1.0)
         self.qtgui_freq_sink_x_0.enable_axis_labels(True)
         self.qtgui_freq_sink_x_0.enable_control_panel(False)
-
+        
         if not False:
           self.qtgui_freq_sink_x_0.disable_legend()
-
+        
         if "complex" == "float" or "complex" == "msg_float":
           self.qtgui_freq_sink_x_0.set_plot_pos_half(not True)
-
+        
         labels = ['', '', '', '', '',
                   '', '', '', '', '']
         widths = [1, 1, 1, 1, 1,
@@ -148,18 +146,18 @@ class uhd_ais_record(gr.top_block, Qt.QWidget):
             self.qtgui_freq_sink_x_0.set_line_width(i, widths[i])
             self.qtgui_freq_sink_x_0.set_line_color(i, colors[i])
             self.qtgui_freq_sink_x_0.set_line_alpha(i, alphas[i])
-
+        
         self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_freq_sink_x_0_win, 4,0,4,4)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/leffke/sandbox/ais/captures/20161216/ais_20161216_250k_6.32fc', False)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/zleffke/workspace/rocksat/2017/waveforms/captures/ais_20161216_250k_9.32fc', False)
 
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.blocks_file_source_0, 0), (self.blocks_throttle_0, 0))
-        self.connect((self.blocks_throttle_0, 0), (self.qtgui_freq_sink_x_0, 0))
-        self.connect((self.blocks_throttle_0, 0), (self.qtgui_waterfall_sink_x_0, 0))
+        self.connect((self.blocks_file_source_0, 0), (self.blocks_throttle_0, 0))    
+        self.connect((self.blocks_throttle_0, 0), (self.qtgui_freq_sink_x_0, 0))    
+        self.connect((self.blocks_throttle_0, 0), (self.qtgui_waterfall_sink_x_0, 0))    
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "uhd_ais_record")

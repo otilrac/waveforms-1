@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Uhd Ais 3
-# Generated: Thu Dec 22 10:42:07 2016
+# Generated: Wed Feb  8 11:51:48 2017
 ##################################################
 
 if __name__ == '__main__':
@@ -249,15 +249,15 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.blocks_message_debug_0_1, 'print'))    
+        self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.blocks_message_debug_0_1, 'print_pdu'))    
         self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))    
         self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.pyqt_text_output_0_0, 'pdus'))    
         self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_message_debug_0_1, 'print'))    
+        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_message_debug_0_1, 'print_pdu'))    
         self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))    
         self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.pyqt_text_output_0, 'pdus'))    
         self.msg_connect((self.digital_hdlc_deframer_bp_0, 'out'), (self.ais_pdu_to_nmea_0, 'to_nmea'))    
-        self.msg_connect((self.digital_hdlc_deframer_bp_0, 'out'), (self.blocks_message_debug_0_1, 'print_pdu'))    
         self.msg_connect((self.digital_hdlc_deframer_bp_0_0, 'out'), (self.ais_pdu_to_nmea_0_0, 'to_nmea'))    
-        self.msg_connect((self.digital_hdlc_deframer_bp_0_0, 'out'), (self.blocks_message_debug_0_1, 'print_pdu'))    
         self.connect((self.ais_invert_0, 0), (self.digital_hdlc_deframer_bp_0, 0))    
         self.connect((self.ais_invert_0_0, 0), (self.digital_hdlc_deframer_bp_0_0, 0))    
         self.connect((self.analog_agc2_xx_0, 0), (self.analog_quadrature_demod_cf_0_0, 0))    

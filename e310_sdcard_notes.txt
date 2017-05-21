@@ -1,0 +1,173 @@
+E310 Links:
+https://kb.ettus.com/E310/E312#SD_Card_Images
+
+Hume E310 Notes:
+P/N:  156333D-01L
+S/N: 30CB3CB
+
+Because of the 'D' in the part number Correct Image for SD card is in 'ettus-e3xx-sg1' folder for ettus images.
+
+Image downloaded from:
+http://files.ettus.com/e3xx_images/e3xx-release-4/ettus-e3xx-sg1/
+
+Specific image:  sdimage-gnuradio-demo.direct.xz 
+This image is larger, but contains X-window.
+
+Installing image to Sandisk Ultra 32GB MicroSD HC-I, 10 class SD Card
+Shows up as sdb and sdb1 in ubuntu VM
+
+df -h shows /dev/sdb1 as 30 GB partition
+gparted shows sdb1 as fat32 formatted
+
+Extracted SD card with file manage, right click 'extract here' -- FAILED
+
+Extracted SD card with 'unxz' utilities
+'unxz sdimage-gnuradio-demo.direct.xz'
+
+resulting image is 7515821056 bytes in size (~7 GB)
+
+use 'dd' tool to write image to SD card:
+sudo dd if="sdimage-gnuradio-demo.direct" of="/dev/sdb1" bs=1M
+dd output:
+7167+1 records in
+7167+1 records out
+7515821056 bytes (7.5 GB, 7.0 GiB) copied, 613.182 s, 12.3 MB/s
+0.00user 40.55system 10:13.18elapsed 6%CPU (0avgtext+0avgdata 3200maxresident)k
+14675080inputs+14679344outputs (1major+338minor)pagefaults 0swaps
+
+After SD Card image burn, no Serial Console Access.
+All LEDs on USRP light up.
+
+Original SD Card allows serial console access.
+Original SD Card, when inserted with USB adapter into laptop, shows boot and root files.
+New SD Card does not automount when inserted.
+
+
+Trying to burn SD card again, this time to root 'sdb' device isntead of 'sdb1'
+sudo dd if="sdimage-gnuradio-demo.direct" of="/dev/sdb" bs=1M
+dd output:
+7167+1 records in
+7167+1 records out
+7515821056 bytes (7.5 GB, 7.0 GiB) copied, 630.07 s, 11.9 MB/s
+
+root and boot mount available!
+Serial Console appears to be working!
+
+PARTITION EDITS (PAYLOAD SD CARD):
+on host machine with E310 SD Card accessed via USB adapter
+use 'sudo gparted'
+had some issues with accesssing SD card immediately after dd burn.
+removed, re-inserted SD Card. Fixed issues with gparted.
+first create SWAP partition (4096 MiB, linux swap)
+Move to end of file system.
+Applied Changes.
+selected /dev/sdb2
+resized partition to fill gap to SWAP partition.
+applied changes. worked.
+
+Problem with SD Card during boot after resizing.
+Output from Serial Console:
+reading system.dtb
+spl_load_image_fat_os: error reading image system.dtb, err - -1
+reading u-boot.img
+reading u-boot.img
+
+PARTITION EDITS (Command SD CARD):
+1.  created swap partition (4096 MiB), placed at end of disk.
+2.  created new ext4 extension with remaing space.
+3.  left existing partition alone
+4.  applied changes, sdb3 -> swap, sdb4-> new ext4 space
+
+SD card in E310 ->  boot works, new partitions not mount/recognized.
+
+read partitions on E310 using:  'fdisk -l'
+fdisk output:
+Disk /dev/mmcblk0: 29.7 GiB, 31914983424 bytes, 62333952 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x20d5d5bd
+
+Device         Boot    Start      End  Sectors  Size Id Type
+/dev/mmcblk0p1 *           8    36135    36128 17.7M  c W95 FAT32 (LBA)
+/dev/mmcblk0p2         36136 14679335 14643200    7G 83 Linux
+/dev/mmcblk0p3      53946368 62333951  8387584    4G 82 Linux swap / Solaris
+/dev/mmcblk0p4      14680064 53946367 39266304 18.7G 83 Linux
+
+Edit /etc/fstab to add line for mounting swap partition:
+added to end of fstab:
+/dev/mmcblk0p3	     none		  swap	     sw                    0  0
+
+rebooted E310, htop now shows swap partition present!  Woot!
+
+added line to end of fstab:
+/dev/mmcblk0p4       /mnt                 auto       defaults              0  0
+rebooted e310.
+df -h recognizes /mnt folder with 18+ GB available for use!  woot!
+
+
+TEsting writes to /mnt folder are on new partition:
+used dd tool to create a file of zeroes:
+in mnt folder:
+dd if=/dev/zero of=/mnt/test.dat bs=1M count=1k
+df -h shows space consumed on that partition
+output from dd utility:
+1024+0 records in
+1024+0 records out
+1073741824 bytes (1.1 GB) copied, 91.8301 s, 11.7 MB/s
+
+This is a problem!  relatively slow write speed, may not be able to record IQ!
+
+
+Trying Pixtor SD Card, UHS-3, "95 MB/s" speed
+7167+1 records in
+7167+1 records out
+7515821056 bytes (7.5 GB, 7.0 GiB) copied, 647.083 s, 11.6 MB/s
+
+dd test:  dd if=/dev/zero of=/mnt/test.dat bs=1M count=1k
+dd test output:
+1024+0 records in
+1024+0 records out
+1073741824 bytes (1.1 GB) copied, 68.6844 s, 15.6 MB/s
+
+
+Second Pixtor SD Card, UHS-3, 
+7167+1 records in
+7167+1 records out
+7515821056 bytes (7.5 GB, 7.0 GiB) copied, 469.554 s, 16.0 MB/s
+
+dd test:
+dd test output:
+512+0 records in
+512+0 records out
+536870912 bytes (537 MB) copied, 28.7657 s, 18.7 MB/s
+
+Better write speed, but not great.
+
+
+
+20170407:
+Image downloaded from:
+http://files.ettus.com/e3xx_images/e3xx-release-4/ettus-e3xx-sg1/
+
+Specific image:  sdimage-gnuradio-dev.direct.xz 
+This image is larger, but contains X-window.
+
+extracted image
+
+sudo dd if="sdimage-gnuradio-demo.direct" of="/dev/sdb" bs=1M
+
+
+20170520:
+sudo dd if="sdimage-gnuradio-dev.direct" of="/dev/sdb" bs=1M
+7167+1 records in
+7167+1 records out
+7515821056 bytes (7.5 GB, 7.0 GiB) copied, 407.833 s, 18.4 MB/s
+Didn't work, don't like not having X-window or apt-get, reverted back to '-demo.direct'
+
+
+
+
+
+

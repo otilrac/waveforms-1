@@ -1,0 +1,34 @@
+Notes on compiling and installing gr-vtgs on E310
+
+clean git clone to host, plank and gr-vtgs
+in planck and gr-vtgs:
+    mkdir build
+    cd build
+    cmake ../
+    make 
+    make install
+
+opened grc: blocks found in list.
+scp'd tx_scram_sock.py to E310
+executed tx_scram_sock.py:  import Error could not find gr-vtgs.
+
+back to gr-vtgs/build
+make uninstall to remove
+make clean to clean
+in build directory:
+    cmake -j2 ../ -DCMAKE_INSTALL_PREFIX=/usr
+    make -j2
+    make install
+
+Worked, got past importing gr-vtgs
+still failed with note about multiplicative scrambler--> think plank install in wrong place.
+
+in ~/plank/build:
+    make uninstall
+    cmake -j2 ../ -DCMAKE_INSTALL_PREFIX=/usr
+    make -j2
+    make install
+
+Worked!  launched flowgraph, I think
+
+Seems to be working with random data flowgraph

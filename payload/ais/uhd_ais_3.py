@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Uhd Ais 3
-# Generated: Wed Feb  8 11:51:48 2017
+# Generated: Mon Apr 24 13:06:32 2017
 ##################################################
 
 if __name__ == '__main__':
@@ -32,6 +32,7 @@ import math
 import pyqt
 import sip
 import sys
+from gnuradio import qtgui
 
 
 class uhd_ais_3(gr.top_block, Qt.QWidget):
@@ -40,6 +41,7 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
         gr.top_block.__init__(self, "Uhd Ais 3")
         Qt.QWidget.__init__(self)
         self.setWindowTitle("Uhd Ais 3")
+        qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
         except:
@@ -104,13 +106,13 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
         self.qtgui_waterfall_sink_x_0_0.set_update_time(0.010)
         self.qtgui_waterfall_sink_x_0_0.enable_grid(True)
         self.qtgui_waterfall_sink_x_0_0.enable_axis_labels(True)
-        
+
         if not True:
           self.qtgui_waterfall_sink_x_0_0.disable_legend()
-        
+
         if "complex" == "float" or "complex" == "msg_float":
           self.qtgui_waterfall_sink_x_0_0.set_plot_pos_half(not True)
-        
+
         labels = ['', '', '', '', '',
                   '', '', '', '', '']
         colors = [0, 0, 0, 0, 0,
@@ -124,9 +126,9 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
                 self.qtgui_waterfall_sink_x_0_0.set_line_label(i, labels[i])
             self.qtgui_waterfall_sink_x_0_0.set_color_map(i, colors[i])
             self.qtgui_waterfall_sink_x_0_0.set_line_alpha(i, alphas[i])
-        
+
         self.qtgui_waterfall_sink_x_0_0.set_intensity_range(-60, 10)
-        
+
         self._qtgui_waterfall_sink_x_0_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_0_0_win, 2,4,2,4)
         self.qtgui_waterfall_sink_x_0 = qtgui.waterfall_sink_c(
@@ -140,13 +142,13 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
         self.qtgui_waterfall_sink_x_0.set_update_time(0.010)
         self.qtgui_waterfall_sink_x_0.enable_grid(True)
         self.qtgui_waterfall_sink_x_0.enable_axis_labels(True)
-        
+
         if not True:
           self.qtgui_waterfall_sink_x_0.disable_legend()
-        
+
         if "complex" == "float" or "complex" == "msg_float":
           self.qtgui_waterfall_sink_x_0.set_plot_pos_half(not True)
-        
+
         labels = ['', '', '', '', '',
                   '', '', '', '', '']
         colors = [0, 0, 0, 0, 0,
@@ -160,9 +162,9 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
                 self.qtgui_waterfall_sink_x_0.set_line_label(i, labels[i])
             self.qtgui_waterfall_sink_x_0.set_color_map(i, colors[i])
             self.qtgui_waterfall_sink_x_0.set_line_alpha(i, alphas[i])
-        
+
         self.qtgui_waterfall_sink_x_0.set_intensity_range(-60, 10)
-        
+
         self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_0_win, 0,4,2,4)
         self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
@@ -182,13 +184,13 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
         self.qtgui_freq_sink_x_0.set_fft_average(1.0)
         self.qtgui_freq_sink_x_0.enable_axis_labels(True)
         self.qtgui_freq_sink_x_0.enable_control_panel(False)
-        
+
         if not True:
           self.qtgui_freq_sink_x_0.disable_legend()
-        
+
         if "complex" == "float" or "complex" == "msg_float":
           self.qtgui_freq_sink_x_0.set_plot_pos_half(not True)
-        
+
         labels = ['', '', '', '', '',
                   '', '', '', '', '']
         widths = [1, 1, 1, 1, 1,
@@ -205,7 +207,7 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
             self.qtgui_freq_sink_x_0.set_line_width(i, widths[i])
             self.qtgui_freq_sink_x_0.set_line_color(i, colors[i])
             self.qtgui_freq_sink_x_0.set_line_alpha(i, alphas[i])
-        
+
         self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_freq_sink_x_0_win, 0,0,4,4)
         self.pyqt_text_output_0_0 = pyqt.text_output()
@@ -248,43 +250,43 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.blocks_message_debug_0_1, 'print'))    
-        self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.blocks_message_debug_0_1, 'print_pdu'))    
-        self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))    
-        self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.pyqt_text_output_0_0, 'pdus'))    
-        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_message_debug_0_1, 'print'))    
-        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_message_debug_0_1, 'print_pdu'))    
-        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))    
-        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.pyqt_text_output_0, 'pdus'))    
-        self.msg_connect((self.digital_hdlc_deframer_bp_0, 'out'), (self.ais_pdu_to_nmea_0, 'to_nmea'))    
-        self.msg_connect((self.digital_hdlc_deframer_bp_0_0, 'out'), (self.ais_pdu_to_nmea_0_0, 'to_nmea'))    
-        self.connect((self.ais_invert_0, 0), (self.digital_hdlc_deframer_bp_0, 0))    
-        self.connect((self.ais_invert_0_0, 0), (self.digital_hdlc_deframer_bp_0_0, 0))    
-        self.connect((self.analog_agc2_xx_0, 0), (self.analog_quadrature_demod_cf_0_0, 0))    
-        self.connect((self.analog_agc2_xx_0, 0), (self.qtgui_freq_sink_x_0, 0))    
-        self.connect((self.analog_agc2_xx_0, 0), (self.qtgui_waterfall_sink_x_0, 0))    
-        self.connect((self.analog_agc2_xx_0_0, 0), (self.analog_quadrature_demod_cf_0, 0))    
-        self.connect((self.analog_agc2_xx_0_0, 0), (self.qtgui_freq_sink_x_0, 1))    
-        self.connect((self.analog_agc2_xx_0_0, 0), (self.qtgui_waterfall_sink_x_0_0, 0))    
-        self.connect((self.analog_quadrature_demod_cf_0, 0), (self.rational_resampler_xxx_0, 0))    
-        self.connect((self.analog_quadrature_demod_cf_0_0, 0), (self.rational_resampler_xxx_0_0, 0))    
-        self.connect((self.analog_sig_source_x_0, 0), (self.blocks_multiply_xx_0, 1))    
-        self.connect((self.analog_sig_source_x_1, 0), (self.blocks_multiply_xx_1, 0))    
-        self.connect((self.blocks_file_source_0, 0), (self.blocks_throttle_0, 0))    
-        self.connect((self.blocks_multiply_xx_0, 0), (self.low_pass_filter_0_0, 0))    
-        self.connect((self.blocks_multiply_xx_1, 0), (self.low_pass_filter_0, 0))    
-        self.connect((self.blocks_throttle_0, 0), (self.blocks_multiply_xx_0, 0))    
-        self.connect((self.blocks_throttle_0, 0), (self.blocks_multiply_xx_1, 1))    
-        self.connect((self.digital_binary_slicer_fb_0, 0), (self.digital_diff_decoder_bb_0, 0))    
-        self.connect((self.digital_binary_slicer_fb_0_0, 0), (self.digital_diff_decoder_bb_0_0, 0))    
-        self.connect((self.digital_clock_recovery_mm_xx_0, 0), (self.digital_binary_slicer_fb_0, 0))    
-        self.connect((self.digital_clock_recovery_mm_xx_0_0, 0), (self.digital_binary_slicer_fb_0_0, 0))    
-        self.connect((self.digital_diff_decoder_bb_0, 0), (self.ais_invert_0, 0))    
-        self.connect((self.digital_diff_decoder_bb_0_0, 0), (self.ais_invert_0_0, 0))    
-        self.connect((self.low_pass_filter_0, 0), (self.analog_agc2_xx_0, 0))    
-        self.connect((self.low_pass_filter_0_0, 0), (self.analog_agc2_xx_0_0, 0))    
-        self.connect((self.rational_resampler_xxx_0, 0), (self.digital_clock_recovery_mm_xx_0, 0))    
-        self.connect((self.rational_resampler_xxx_0_0, 0), (self.digital_clock_recovery_mm_xx_0_0, 0))    
+        self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.blocks_message_debug_0_1, 'print'))
+        self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.blocks_message_debug_0_1, 'print_pdu'))
+        self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))
+        self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.pyqt_text_output_0_0, 'pdus'))
+        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_message_debug_0_1, 'print'))
+        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_message_debug_0_1, 'print_pdu'))
+        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))
+        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.pyqt_text_output_0, 'pdus'))
+        self.msg_connect((self.digital_hdlc_deframer_bp_0, 'out'), (self.ais_pdu_to_nmea_0, 'to_nmea'))
+        self.msg_connect((self.digital_hdlc_deframer_bp_0_0, 'out'), (self.ais_pdu_to_nmea_0_0, 'to_nmea'))
+        self.connect((self.ais_invert_0, 0), (self.digital_hdlc_deframer_bp_0, 0))
+        self.connect((self.ais_invert_0_0, 0), (self.digital_hdlc_deframer_bp_0_0, 0))
+        self.connect((self.analog_agc2_xx_0, 0), (self.analog_quadrature_demod_cf_0_0, 0))
+        self.connect((self.analog_agc2_xx_0, 0), (self.qtgui_freq_sink_x_0, 0))
+        self.connect((self.analog_agc2_xx_0, 0), (self.qtgui_waterfall_sink_x_0, 0))
+        self.connect((self.analog_agc2_xx_0_0, 0), (self.analog_quadrature_demod_cf_0, 0))
+        self.connect((self.analog_agc2_xx_0_0, 0), (self.qtgui_freq_sink_x_0, 1))
+        self.connect((self.analog_agc2_xx_0_0, 0), (self.qtgui_waterfall_sink_x_0_0, 0))
+        self.connect((self.analog_quadrature_demod_cf_0, 0), (self.rational_resampler_xxx_0, 0))
+        self.connect((self.analog_quadrature_demod_cf_0_0, 0), (self.rational_resampler_xxx_0_0, 0))
+        self.connect((self.analog_sig_source_x_0, 0), (self.blocks_multiply_xx_0, 1))
+        self.connect((self.analog_sig_source_x_1, 0), (self.blocks_multiply_xx_1, 0))
+        self.connect((self.blocks_file_source_0, 0), (self.blocks_throttle_0, 0))
+        self.connect((self.blocks_multiply_xx_0, 0), (self.low_pass_filter_0_0, 0))
+        self.connect((self.blocks_multiply_xx_1, 0), (self.low_pass_filter_0, 0))
+        self.connect((self.blocks_throttle_0, 0), (self.blocks_multiply_xx_0, 0))
+        self.connect((self.blocks_throttle_0, 0), (self.blocks_multiply_xx_1, 1))
+        self.connect((self.digital_binary_slicer_fb_0, 0), (self.digital_diff_decoder_bb_0, 0))
+        self.connect((self.digital_binary_slicer_fb_0_0, 0), (self.digital_diff_decoder_bb_0_0, 0))
+        self.connect((self.digital_clock_recovery_mm_xx_0, 0), (self.digital_binary_slicer_fb_0, 0))
+        self.connect((self.digital_clock_recovery_mm_xx_0_0, 0), (self.digital_binary_slicer_fb_0_0, 0))
+        self.connect((self.digital_diff_decoder_bb_0, 0), (self.ais_invert_0, 0))
+        self.connect((self.digital_diff_decoder_bb_0_0, 0), (self.ais_invert_0_0, 0))
+        self.connect((self.low_pass_filter_0, 0), (self.analog_agc2_xx_0, 0))
+        self.connect((self.low_pass_filter_0_0, 0), (self.analog_agc2_xx_0_0, 0))
+        self.connect((self.rational_resampler_xxx_0, 0), (self.digital_clock_recovery_mm_xx_0, 0))
+        self.connect((self.rational_resampler_xxx_0_0, 0), (self.digital_clock_recovery_mm_xx_0_0, 0))
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "uhd_ais_3")

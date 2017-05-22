@@ -168,6 +168,13 @@ Didn't work, don't like not having X-window or apt-get, reverted back to '-demo.
 
 
 
+20170521:
+Part Number for Rocksat owned E310:  156333E-01L
+The 'E' in the part number makes the images downloaded for the hume E310 ('D') incompatible.
+Re-downloading image for P/N 'E' from:
+http://files.ettus.com/e3xx_images/e3xx-release-4/ettus-e3xx-sg3/
 
+Image Downloaded:
+sdimage-gnuradio-demo.direct.xz 
 
 

@@ -15,10 +15,15 @@ import serial
 import socket
 import threading
 import random
-
+import numpy
+import struct
+import ctypes
+import binascii
 
 from optparse import OptionParser
 from datetime import datetime as date
+
+CALLSIGN = "KJ4WRQ"
     
 if __name__ == '__main__':
     #ts = (date.datetime.utcnow()).strftime("%Y%m%d")
@@ -34,29 +39,33 @@ if __name__ == '__main__':
     f_help = "source data file, [default=%default]"
     rand_help = "Enable random sleep, [default=%default]"
 
-    parser.add_option("-a","--addr"  ,dest="addr"  ,action="store",type="string",default="127.0.0.1",help=a_help)
-    parser.add_option("-p","--port"  ,dest="port"  ,action="store",type="int",default="4000",help=p_help)
-    parser.add_option("-r","--rate"  ,dest="rate"  ,action="store",type="float" ,default="0.5",help=r_help)
-    parser.add_option("-f","--file"  ,dest="file"  ,action="store",type="string",default="zeros.dat",help=f_help)
+    parser.add_option("-a","--addr"  ,dest="addr"  ,action="store",type="string",default="0.0.0.0",help=a_help)
+    parser.add_option("-p","--port"  ,dest="port"  ,action="store",type="int",default="52001",help=p_help)
+    parser.add_option("-r","--rate"  ,dest="rate"  ,action="store",type="float" ,default="0.044",help=r_help)
     parser.add_option("","--rand"  ,dest="rand"  ,action="store",type="int",default="0",help=rand_help)
 
     (options, args) = parser.parse_args()
     #--------END Command Line option parser------------------------------------------------------
 
-    print options.file
-    f = open(options.file, 'r') 
-    data = f.read()
-    print len(data)
-
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.sendto(data, (options.addr, options.port))
+    sock.setblocking(0)
+    sock.settimeout(1)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    #sock.sendto(data, (options.addr, options.port))
+    sock.bind((options.addr, options.port))
+    count = int(0)
+    buff=ctypes.create_string_buffer(2)
     while 1:
-        sock.sendto(data, (options.addr, options.port))
-        if options.rand != 0:
-            sleep_time = random.uniform(0, 2)
-            print 'Sleeping for:', str(sleep_time)
-            time.sleep(sleep_time)
-        else:
-            time.sleep(options.rate)
+        try:
+            rx_data, addr = sock.recvfrom(4096) # block until data received on control port
+            print count
+            print binascii.hexlify(rx_data)
+            print len(rx_data)
+            print addr
+            count += 1
+        except socket.timeout, e:
+            print e
+        
     
     sys.exit()

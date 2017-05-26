@@ -15,10 +15,15 @@ import serial
 import socket
 import threading
 import random
-
+import numpy
+import struct
+import ctypes
+import binascii
 
 from optparse import OptionParser
 from datetime import datetime as date
+
+CALLSIGN = "KJ4WRQ"
     
 if __name__ == '__main__':
     #ts = (date.datetime.utcnow()).strftime("%Y%m%d")
@@ -43,14 +48,27 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     #--------END Command Line option parser------------------------------------------------------
 
-    print options.file
-    f = open(options.file, 'r') 
-    data = f.read()
-    print len(data)
-
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.sendto(data, (options.addr, options.port))
+    #sock.sendto(data, (options.addr, options.port))
+    count = int(0)
+    buff=ctypes.create_string_buffer(2)
     while 1:
+        data = []
+
+        for ch in CALLSIGN:
+            data.append(ord(ch))
+
+        #increment counter
+        count = numpy.uint16( numpy.int16(count) )
+        struct.pack_into(">H", buff, 0, count)
+        #print buff
+        #print count
+        data.append((count >> 8) & 0xff)
+        data.append(count & 0xff)
+        #print list(data)
+        data.extend(numpy.random.randint(0, 256, size=248))
+        data = bytearray(data)
+        print binascii.hexlify(data)
         sock.sendto(data, (options.addr, options.port))
         if options.rand != 0:
             sleep_time = random.uniform(0, 2)
@@ -58,5 +76,6 @@ if __name__ == '__main__':
             time.sleep(sleep_time)
         else:
             time.sleep(options.rate)
+        count += 1
     
     sys.exit()

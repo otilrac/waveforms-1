@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<?grc format='1' created='3.7.11'?>
+<?grc format='1' created='3.7.12'?>
 <flow_graph>
   <timestamp>Tue Mar 29 18:54:20 2016</timestamp>
   <block>
@@ -121,7 +121,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>127.0.0.1</value>
+      <value>0.0.0.0</value>
     </param>
   </block>
   <block>
@@ -266,7 +266,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>1</value>
+      <value>.5</value>
     </param>
   </block>
   <block>
@@ -450,7 +450,7 @@
     </param>
     <param>
       <key>mtu</key>
-      <value>10000</value>
+      <value>256</value>
     </param>
     <param>
       <key>maxoutbuf</key>
@@ -729,7 +729,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>4000</value>
+      <value>52001</value>
     </param>
   </block>
   <block>
@@ -2263,12 +2263,6 @@
   <connection>
     <source_block_id>analog_random_source_x_0</source_block_id>
     <sink_block_id>blocks_stream_mux_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>blocks_multiply_const_vxx_0</source_block_id>
-    <sink_block_id>blocks_throttle_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>

@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Ais Sim
-# Generated: Fri May 26 17:24:58 2017
+# Generated: Fri May 26 17:30:29 2017
 ##################################################
 
 if __name__ == '__main__':
@@ -19,7 +19,6 @@ if __name__ == '__main__':
 from PyQt4 import Qt
 from gnuradio import analog
 from gnuradio import blocks
-from gnuradio import digital
 from gnuradio import eng_notation
 from gnuradio import filter
 from gnuradio import gr
@@ -29,9 +28,6 @@ from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
 from gnuradio.qtgui import Range, RangeWidget
 from optparse import OptionParser
-import ais
-import math
-import pyqt
 import sip
 import sys
 import time
@@ -67,14 +63,11 @@ class ais_sim(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.samp_rate = samp_rate = 250000
-        self.decim = decim = 5
-        self.baud = baud = 9600
         self.tx_gain = tx_gain = 10
-        self.samp_per_sym = samp_per_sym = (samp_rate/decim/50*48)/baud
+        self.samp_rate = samp_rate = 250000
         self.rx_gain = rx_gain = 10
-        self.fsk_deviation = fsk_deviation = 10e3
         self.freq = freq = 162e6
+        self.decim = decim = 5
         self.bb_gain = bb_gain = 300
 
         ##################################################
@@ -99,18 +92,6 @@ class ais_sim(gr.top_block, Qt.QWidget):
         self._rx_gain_range = Range(1, 85, 1, 10, 200)
         self._rx_gain_win = RangeWidget(self._rx_gain_range, self.set_rx_gain, "rx_gain", "counter_slider", float)
         self.top_layout.addWidget(self._rx_gain_win)
-        self.rational_resampler_xxx_0_0 = filter.rational_resampler_fff(
-                interpolation=48,
-                decimation=50,
-                taps=None,
-                fractional_bw=None,
-        )
-        self.rational_resampler_xxx_0 = filter.rational_resampler_fff(
-                interpolation=48,
-                decimation=50,
-                taps=None,
-                fractional_bw=None,
-        )
         self.qtgui_waterfall_sink_x_0_0 = qtgui.waterfall_sink_c(
         	1024, #size
         	firdes.WIN_BLACKMAN_hARRIS, #wintype
@@ -226,59 +207,29 @@ class ais_sim(gr.top_block, Qt.QWidget):
 
         self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_freq_sink_x_0_win, 0,0,4,4)
-        self.pyqt_text_output_0 = pyqt.text_output()
-        self._pyqt_text_output_0_win = self.pyqt_text_output_0;
-        self.top_layout.addWidget(self._pyqt_text_output_0_win)
         self.low_pass_filter_0_0 = filter.fir_filter_ccf(decim, firdes.low_pass(
         	1, samp_rate, 7e3, 1e3, firdes.WIN_HAMMING, 6.76))
         self.low_pass_filter_0 = filter.fir_filter_ccf(decim, firdes.low_pass(
         	1, samp_rate, 7e3, 1e3, firdes.WIN_HAMMING, 6.76))
-        self.digital_map_bb_0_0 = digital.map_bb((1,0))
-        self.digital_map_bb_0 = digital.map_bb((1,0))
-        self.digital_hdlc_deframer_bp_0_0 = digital.hdlc_deframer_bp(11, 1000)
-        self.digital_hdlc_deframer_bp_0 = digital.hdlc_deframer_bp(11, 1000)
-        self.digital_diff_decoder_bb_0_0 = digital.diff_decoder_bb(2)
-        self.digital_diff_decoder_bb_0 = digital.diff_decoder_bb(2)
-        self.digital_clock_recovery_mm_xx_0_0 = digital.clock_recovery_mm_ff(samp_per_sym*(1+0.0), 0.25*0.175*0.175, 0.5, 0.175, 0.005)
-        self.digital_clock_recovery_mm_xx_0 = digital.clock_recovery_mm_ff(samp_per_sym*(1+0.0), 0.25*0.175*0.175, 0.5, 0.175, 0.005)
-        self.digital_binary_slicer_fb_0_0 = digital.binary_slicer_fb()
-        self.digital_binary_slicer_fb_0 = digital.binary_slicer_fb()
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
-        self.blocks_socket_pdu_0 = blocks.socket_pdu("TCP_SERVER", '0.0.0.0', '52001', 10000, False)
         self.blocks_multiply_xx_1 = blocks.multiply_vcc(1)
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_vcc((bb_gain, ))
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/zleffke/workspace/captures/ais/ais_20161218_250k_2.32fc', True)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/zleffke/workspace/captures/ais/20161218/ais_20161218_250k_2.32fc', True)
         self.analog_sig_source_x_1 = analog.sig_source_c(samp_rate, analog.GR_COS_WAVE, 25e3+400, 1, 0)
         self.analog_sig_source_x_0 = analog.sig_source_c(samp_rate, analog.GR_COS_WAVE, -25e3+400, 1, 0)
-        self.analog_quadrature_demod_cf_0_0 = analog.quadrature_demod_cf((samp_rate/decim)/(2*math.pi*fsk_deviation/8.0))
-        self.analog_quadrature_demod_cf_0 = analog.quadrature_demod_cf((samp_rate/decim)/(2*math.pi*fsk_deviation/8.0))
         self.analog_agc2_xx_0_0 = analog.agc2_cc(1e-3, 1e-1, 1.0, 1.0)
         self.analog_agc2_xx_0_0.set_max_gain(65536)
         self.analog_agc2_xx_0 = analog.agc2_cc(1e-3, 1e-1, 1.0, 1.0)
         self.analog_agc2_xx_0.set_max_gain(65536)
-        self.ais_pdu_to_nmea_0_0 = ais.pdu_to_nmea('B')
-        self.ais_pdu_to_nmea_0 = ais.pdu_to_nmea('A')
 
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))
-        self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.pyqt_text_output_0, 'pdus'))
-        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))
-        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.pyqt_text_output_0, 'pdus'))
-        self.msg_connect((self.digital_hdlc_deframer_bp_0, 'out'), (self.ais_pdu_to_nmea_0, 'to_nmea'))
-        self.msg_connect((self.digital_hdlc_deframer_bp_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))
-        self.msg_connect((self.digital_hdlc_deframer_bp_0_0, 'out'), (self.ais_pdu_to_nmea_0_0, 'to_nmea'))
-        self.msg_connect((self.digital_hdlc_deframer_bp_0_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))
-        self.connect((self.analog_agc2_xx_0, 0), (self.analog_quadrature_demod_cf_0_0, 0))
         self.connect((self.analog_agc2_xx_0, 0), (self.qtgui_freq_sink_x_0, 0))
         self.connect((self.analog_agc2_xx_0, 0), (self.qtgui_waterfall_sink_x_0, 0))
-        self.connect((self.analog_agc2_xx_0_0, 0), (self.analog_quadrature_demod_cf_0, 0))
         self.connect((self.analog_agc2_xx_0_0, 0), (self.qtgui_freq_sink_x_0, 1))
         self.connect((self.analog_agc2_xx_0_0, 0), (self.qtgui_waterfall_sink_x_0_0, 0))
-        self.connect((self.analog_quadrature_demod_cf_0, 0), (self.rational_resampler_xxx_0, 0))
-        self.connect((self.analog_quadrature_demod_cf_0_0, 0), (self.rational_resampler_xxx_0_0, 0))
         self.connect((self.analog_sig_source_x_0, 0), (self.blocks_multiply_xx_0, 1))
         self.connect((self.analog_sig_source_x_1, 0), (self.blocks_multiply_xx_1, 0))
         self.connect((self.blocks_file_source_0, 0), (self.blocks_throttle_0, 0))
@@ -288,30 +239,27 @@ class ais_sim(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_throttle_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.blocks_throttle_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.blocks_throttle_0, 0), (self.blocks_multiply_xx_1, 1))
-        self.connect((self.digital_binary_slicer_fb_0, 0), (self.digital_diff_decoder_bb_0, 0))
-        self.connect((self.digital_binary_slicer_fb_0_0, 0), (self.digital_diff_decoder_bb_0_0, 0))
-        self.connect((self.digital_clock_recovery_mm_xx_0, 0), (self.digital_binary_slicer_fb_0, 0))
-        self.connect((self.digital_clock_recovery_mm_xx_0_0, 0), (self.digital_binary_slicer_fb_0_0, 0))
-        self.connect((self.digital_diff_decoder_bb_0, 0), (self.digital_map_bb_0, 0))
-        self.connect((self.digital_diff_decoder_bb_0_0, 0), (self.digital_map_bb_0_0, 0))
-        self.connect((self.digital_map_bb_0, 0), (self.digital_hdlc_deframer_bp_0, 0))
-        self.connect((self.digital_map_bb_0_0, 0), (self.digital_hdlc_deframer_bp_0_0, 0))
         self.connect((self.low_pass_filter_0, 0), (self.analog_agc2_xx_0, 0))
         self.connect((self.low_pass_filter_0_0, 0), (self.analog_agc2_xx_0_0, 0))
-        self.connect((self.rational_resampler_xxx_0, 0), (self.digital_clock_recovery_mm_xx_0, 0))
-        self.connect((self.rational_resampler_xxx_0_0, 0), (self.digital_clock_recovery_mm_xx_0_0, 0))
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "ais_sim")
         self.settings.setValue("geometry", self.saveGeometry())
         event.accept()
 
+    def get_tx_gain(self):
+        return self.tx_gain
+
+    def set_tx_gain(self, tx_gain):
+        self.tx_gain = tx_gain
+        self.uhd_usrp_sink_0.set_gain(self.tx_gain, 0)
+
+
     def get_samp_rate(self):
         return self.samp_rate
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.set_samp_per_sym((self.samp_rate/self.decim/50*48)/self.baud)
         self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
         self.uhd_usrp_sink_0.set_center_freq(uhd.tune_request(self.freq, self.samp_rate/2), 0)
         self.qtgui_waterfall_sink_x_0_0.set_frequency_range(0, self.samp_rate)
@@ -322,41 +270,6 @@ class ais_sim(gr.top_block, Qt.QWidget):
         self.blocks_throttle_0.set_sample_rate(self.samp_rate)
         self.analog_sig_source_x_1.set_sampling_freq(self.samp_rate)
         self.analog_sig_source_x_0.set_sampling_freq(self.samp_rate)
-        self.analog_quadrature_demod_cf_0_0.set_gain((self.samp_rate/self.decim)/(2*math.pi*self.fsk_deviation/8.0))
-        self.analog_quadrature_demod_cf_0.set_gain((self.samp_rate/self.decim)/(2*math.pi*self.fsk_deviation/8.0))
-
-    def get_decim(self):
-        return self.decim
-
-    def set_decim(self, decim):
-        self.decim = decim
-        self.set_samp_per_sym((self.samp_rate/self.decim/50*48)/self.baud)
-        self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate/self.decim)
-        self.analog_quadrature_demod_cf_0_0.set_gain((self.samp_rate/self.decim)/(2*math.pi*self.fsk_deviation/8.0))
-        self.analog_quadrature_demod_cf_0.set_gain((self.samp_rate/self.decim)/(2*math.pi*self.fsk_deviation/8.0))
-
-    def get_baud(self):
-        return self.baud
-
-    def set_baud(self, baud):
-        self.baud = baud
-        self.set_samp_per_sym((self.samp_rate/self.decim/50*48)/self.baud)
-
-    def get_tx_gain(self):
-        return self.tx_gain
-
-    def set_tx_gain(self, tx_gain):
-        self.tx_gain = tx_gain
-        self.uhd_usrp_sink_0.set_gain(self.tx_gain, 0)
-
-
-    def get_samp_per_sym(self):
-        return self.samp_per_sym
-
-    def set_samp_per_sym(self, samp_per_sym):
-        self.samp_per_sym = samp_per_sym
-        self.digital_clock_recovery_mm_xx_0_0.set_omega(self.samp_per_sym*(1+0.0))
-        self.digital_clock_recovery_mm_xx_0.set_omega(self.samp_per_sym*(1+0.0))
 
     def get_rx_gain(self):
         return self.rx_gain
@@ -364,20 +277,19 @@ class ais_sim(gr.top_block, Qt.QWidget):
     def set_rx_gain(self, rx_gain):
         self.rx_gain = rx_gain
 
-    def get_fsk_deviation(self):
-        return self.fsk_deviation
-
-    def set_fsk_deviation(self, fsk_deviation):
-        self.fsk_deviation = fsk_deviation
-        self.analog_quadrature_demod_cf_0_0.set_gain((self.samp_rate/self.decim)/(2*math.pi*self.fsk_deviation/8.0))
-        self.analog_quadrature_demod_cf_0.set_gain((self.samp_rate/self.decim)/(2*math.pi*self.fsk_deviation/8.0))
-
     def get_freq(self):
         return self.freq
 
     def set_freq(self, freq):
         self.freq = freq
         self.uhd_usrp_sink_0.set_center_freq(uhd.tune_request(self.freq, self.samp_rate/2), 0)
+
+    def get_decim(self):
+        return self.decim
+
+    def set_decim(self, decim):
+        self.decim = decim
+        self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate/self.decim)
 
     def get_bb_gain(self):
         return self.bb_gain

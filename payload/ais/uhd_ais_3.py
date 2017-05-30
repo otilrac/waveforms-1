@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Uhd Ais 3
-# Generated: Mon Apr 24 13:06:32 2017
+# Generated: Sat May 27 01:58:26 2017
 ##################################################
 
 if __name__ == '__main__':
@@ -233,7 +233,7 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
         self.blocks_multiply_xx_1 = blocks.multiply_vcc(1)
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
         self.blocks_message_debug_0_1 = blocks.message_debug()
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/zleffke/workspace/rocksat/2017/waveforms/captures/ais_20161218_250k_2.32fc', True)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/zleffke/workspace/captures/ais/ais_20161218_250k_2.32fc', True)
         self.analog_sig_source_x_1 = analog.sig_source_c(samp_rate, analog.GR_COS_WAVE, 25e3+400, 1, 0)
         self.analog_sig_source_x_0 = analog.sig_source_c(samp_rate, analog.GR_COS_WAVE, -25e3+400, 1, 0)
         self.analog_quadrature_demod_cf_0_0 = analog.quadrature_demod_cf((samp_rate/decim)/(2*math.pi*fsk_deviation/8.0))
@@ -254,8 +254,8 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
         self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.blocks_message_debug_0_1, 'print_pdu'))
         self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))
         self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.pyqt_text_output_0_0, 'pdus'))
-        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_message_debug_0_1, 'print'))
         self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_message_debug_0_1, 'print_pdu'))
+        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_message_debug_0_1, 'print'))
         self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))
         self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.pyqt_text_output_0, 'pdus'))
         self.msg_connect((self.digital_hdlc_deframer_bp_0, 'out'), (self.ais_pdu_to_nmea_0, 'to_nmea'))

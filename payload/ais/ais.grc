@@ -66,7 +66,7 @@
     </param>
     <param>
       <key>run_options</key>
-      <value>prompt</value>
+      <value>run</value>
     </param>
     <param>
       <key>run</key>
@@ -380,7 +380,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(720, 632)</value>
+      <value>(664, 664)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -423,7 +423,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(672, 736)</value>
+      <value>(672, 768)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -678,7 +678,7 @@
     </param>
     <param>
       <key>freq</key>
-      <value>-25e3+400</value>
+      <value>-25e3</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -741,7 +741,7 @@
     </param>
     <param>
       <key>freq</key>
-      <value>25e3+400</value>
+      <value>25e3</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -778,6 +778,57 @@
     <param>
       <key>waveform</key>
       <value>analog.GR_COS_WAVE</value>
+    </param>
+  </block>
+  <block>
+    <key>blocks_file_sink</key>
+    <param>
+      <key>append</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>file</key>
+      <value>/dev/stdout</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1064, 716)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_file_sink_0</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>byte</value>
+    </param>
+    <param>
+      <key>unbuffered</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
     </param>
   </block>
   <block>
@@ -833,37 +884,6 @@
     <param>
       <key>vlen</key>
       <value>1</value>
-    </param>
-  </block>
-  <block>
-    <key>blocks_message_debug</key>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(856, 680)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>blocks_message_debug_0_1</value>
     </param>
   </block>
   <block>
@@ -969,7 +989,7 @@
     </param>
   </block>
   <block>
-    <key>blocks_socket_pdu</key>
+    <key>blocks_pdu_to_tagged_stream</key>
     <param>
       <key>alias</key>
       <value></value>
@@ -988,23 +1008,23 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(856, 800)</value>
+      <value>(848, 732)</value>
     </param>
     <param>
       <key>_rotation</key>
       <value>0</value>
     </param>
     <param>
-      <key>host</key>
-      <value>addr</value>
-    </param>
-    <param>
       <key>id</key>
-      <value>blocks_socket_pdu_0</value>
+      <value>blocks_pdu_to_tagged_stream_0</value>
     </param>
     <param>
-      <key>mtu</key>
-      <value>10000</value>
+      <key>type</key>
+      <value>byte</value>
+    </param>
+    <param>
+      <key>tag</key>
+      <value>packet_len</value>
     </param>
     <param>
       <key>maxoutbuf</key>
@@ -1013,18 +1033,6 @@
     <param>
       <key>minoutbuf</key>
       <value>0</value>
-    </param>
-    <param>
-      <key>port</key>
-      <value>port</value>
-    </param>
-    <param>
-      <key>tcp_no_delay</key>
-      <value>False</value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>"UDP_CLIENT"</value>
     </param>
   </block>
   <block>
@@ -2667,7 +2675,7 @@
     </param>
     <param>
       <key>ant0</key>
-      <value></value>
+      <value>RX2</value>
     </param>
     <param>
       <key>bw0</key>
@@ -3863,7 +3871,7 @@
     </param>
     <param>
       <key>sd_spec0</key>
-      <value></value>
+      <value>A:B</value>
     </param>
     <param>
       <key>time_source0</key>
@@ -4216,37 +4224,13 @@
   </block>
   <connection>
     <source_block_id>ais_pdu_to_nmea_0</source_block_id>
-    <sink_block_id>blocks_message_debug_0_1</sink_block_id>
-    <source_key>out</source_key>
-    <sink_key>print</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>ais_pdu_to_nmea_0</source_block_id>
-    <sink_block_id>blocks_message_debug_0_1</sink_block_id>
-    <source_key>out</source_key>
-    <sink_key>print_pdu</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>ais_pdu_to_nmea_0</source_block_id>
-    <sink_block_id>blocks_socket_pdu_0</sink_block_id>
+    <sink_block_id>blocks_pdu_to_tagged_stream_0</sink_block_id>
     <source_key>out</source_key>
     <sink_key>pdus</sink_key>
   </connection>
   <connection>
     <source_block_id>ais_pdu_to_nmea_0_0</source_block_id>
-    <sink_block_id>blocks_message_debug_0_1</sink_block_id>
-    <source_key>out</source_key>
-    <sink_key>print</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>ais_pdu_to_nmea_0_0</source_block_id>
-    <sink_block_id>blocks_message_debug_0_1</sink_block_id>
-    <source_key>out</source_key>
-    <sink_key>print_pdu</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>ais_pdu_to_nmea_0_0</source_block_id>
-    <sink_block_id>blocks_socket_pdu_0</sink_block_id>
+    <sink_block_id>blocks_pdu_to_tagged_stream_0</sink_block_id>
     <source_key>out</source_key>
     <sink_key>pdus</sink_key>
   </connection>
@@ -4325,6 +4309,12 @@
   <connection>
     <source_block_id>blocks_multiply_xx_1</source_block_id>
     <sink_block_id>low_pass_filter_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_pdu_to_tagged_stream_0</source_block_id>
+    <sink_block_id>blocks_file_sink_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>

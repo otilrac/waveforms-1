@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Uhd Adsb 5
-# Generated: Sun Feb 26 12:50:11 2017
+# Generated: Sat May 27 23:53:23 2017
 ##################################################
 
 if __name__ == '__main__':
@@ -270,7 +270,7 @@ class uhd_adsb_5(gr.top_block, Qt.QWidget):
         self._qtgui_time_raster_sink_x_0_win = sip.wrapinstance(self.qtgui_time_raster_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_time_raster_sink_x_0_win)
         self.mac_packet_to_pdu_0 = mac.packet_to_pdu(msgq=mac_packet_to_pdu_0_msgq_in, dewhiten=False, output_invalid=False)
-        self.digital_correlate_access_code_tag_bb_0 = digital.correlate_access_code_tag_bb('1010000101000000', 0, 'adsb_preamble')
+        self.digital_correlate_access_code_tag_xx_0 = digital.correlate_access_code_tag_bb('1010000101000000', 0, 'adsb_preamble')
         self.digital_binary_slicer_fb_0 = digital.binary_slicer_fb()
         self.dc_blocker_xx_0 = filter.dc_blocker_ff(4, True)
         self.blocks_uchar_to_float_1 = blocks.uchar_to_float()
@@ -278,7 +278,8 @@ class uhd_adsb_5(gr.top_block, Qt.QWidget):
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
         self.blocks_socket_pdu_0 = blocks.socket_pdu("TCP_SERVER", '127.0.0.1', '52001', 10000, False)
         self.blocks_message_source_0 = blocks.message_source(gr.sizeof_char*1, blocks_message_source_0_msgq_in)
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/zleffke/workspace/rocksat/2017/waveforms/captures/adsb_20161214_2M.32fc', False)
+        self.blocks_message_debug_0 = blocks.message_debug()
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/zleffke/workspace/captures/adsb/adsb_20161212_2M.32fc', False)
         self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, '/dev/stdout', True)
         self.blocks_file_sink_0.set_unbuffered(True)
         self.blocks_complex_to_mag_squared_0 = blocks.complex_to_mag_squared(1)
@@ -290,11 +291,12 @@ class uhd_adsb_5(gr.top_block, Qt.QWidget):
         	lambda: self.set_alpha(eng_notation.str_to_num(str(self._alpha_line_edit.text().toAscii()))))
         self.top_grid_layout.addWidget(self._alpha_tool_bar, 1,4,1,2)
         self.adsb_framer_0 = adsb.framer(tx_msgq=adsb_framer_0_msgq_out)
-        self.adsb_decoder_0 = adsb.decoder(rx_msgq=adsb_decoder_0_msgq_in,tx_msgq=adsb_decoder_0_msgq_out,output_type="hex",check_parity=True)
+        self.adsb_decoder_0 = adsb.decoder(rx_msgq=adsb_decoder_0_msgq_in,tx_msgq=adsb_decoder_0_msgq_out,output_type="hex",check_parity=False)
 
         ##################################################
         # Connections
         ##################################################
+        self.msg_connect((self.mac_packet_to_pdu_0, 'pdu'), (self.blocks_message_debug_0, 'print_pdu'))
         self.msg_connect((self.mac_packet_to_pdu_0, 'pdu'), (self.blocks_socket_pdu_0, 'pdus'))
         self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.dc_blocker_xx_0, 0))
         self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.qtgui_time_sink_x_0, 1))
@@ -307,9 +309,9 @@ class uhd_adsb_5(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_uchar_to_float_1, 0), (self.qtgui_time_sink_x_1, 0))
         self.connect((self.dc_blocker_xx_0, 0), (self.digital_binary_slicer_fb_0, 0))
         self.connect((self.dc_blocker_xx_0, 0), (self.qtgui_time_sink_x_0, 0))
-        self.connect((self.digital_binary_slicer_fb_0, 0), (self.digital_correlate_access_code_tag_bb_0, 0))
-        self.connect((self.digital_correlate_access_code_tag_bb_0, 0), (self.adsb_framer_0, 0))
-        self.connect((self.digital_correlate_access_code_tag_bb_0, 0), (self.blocks_uchar_to_float_0, 0))
+        self.connect((self.digital_binary_slicer_fb_0, 0), (self.digital_correlate_access_code_tag_xx_0, 0))
+        self.connect((self.digital_correlate_access_code_tag_xx_0, 0), (self.adsb_framer_0, 0))
+        self.connect((self.digital_correlate_access_code_tag_xx_0, 0), (self.blocks_uchar_to_float_0, 0))
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "uhd_adsb_5")

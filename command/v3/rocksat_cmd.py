@@ -2,27 +2,30 @@
 # -*- coding: utf-8 -*-
 ##################################################
 # GNU Radio Python Flow Graph
-# Title: Tx Scram Sock
-# Generated: Mon Jun 12 16:25:05 2017
+# Title: Rocksat Cmd
+# Generated: Thu Jun 15 10:33:03 2017
 ##################################################
 
+import os
+import sys
+sys.path.append(os.environ.get('GRC_HIER_PATH', os.path.expanduser('~/.grc_gnuradio')))
+
+from fsk_rx_hier import fsk_rx_hier  # grc-generated hier_block
 from gnuradio import blocks
-from gnuradio import digital
 from gnuradio import eng_notation
 from gnuradio import gr
 from gnuradio import uhd
 from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
 from optparse import OptionParser
-import numpy
+from tx_ao40_dbpsk_hier import tx_ao40_dbpsk_hier  # grc-generated hier_block
 import time
-import vtgs
 
 
-class tx_scram_sock(gr.top_block):
+class rocksat_cmd(gr.top_block):
 
-    def __init__(self, addr='0.0.0.0', alpha=0.5, bb_gain=.4, port='52001', samp_rate=500e3, samps_per_symb=4, tx_correct=0, tx_freq=2395e6, tx_gain=75, tx_offset=50e3):
-        gr.top_block.__init__(self, "Tx Scram Sock")
+    def __init__(self, addr='0.0.0.0', alpha=0.5, bb_gain=.5, port='52001', rx_freq=433, rx_gain=20, samp_rate=500e3, samps_per_symb=4, tx_correct=0, tx_freq=2395e6, tx_gain=20, tx_offset=0, rx_correct=0, rx_offset=samp_rate/2):
+        gr.top_block.__init__(self, "Rocksat Cmd")
 
         ##################################################
         # Parameters
@@ -31,18 +34,31 @@ class tx_scram_sock(gr.top_block):
         self.alpha = alpha
         self.bb_gain = bb_gain
         self.port = port
+        self.rx_freq = rx_freq
+        self.rx_gain = rx_gain
         self.samp_rate = samp_rate
         self.samps_per_symb = samps_per_symb
         self.tx_correct = tx_correct
         self.tx_freq = tx_freq
         self.tx_gain = tx_gain
         self.tx_offset = tx_offset
+        self.rx_correct = rx_correct
+        self.rx_offset = rx_offset
 
         ##################################################
         # Blocks
         ##################################################
-        self.vtgs_mult_scrambler_0 = vtgs.mult_scrambler(17, 0x3FFFF)
-        self.vtgs_ao40_encoder_0 = vtgs.ao40_encoder(False, 449838109)
+        self.uhd_usrp_source_0_0 = uhd.usrp_source(
+        	",".join(("", "")),
+        	uhd.stream_args(
+        		cpu_format="fc32",
+        		channels=range(1),
+        	),
+        )
+        self.uhd_usrp_source_0_0.set_samp_rate(samp_rate)
+        self.uhd_usrp_source_0_0.set_center_freq(uhd.tune_request(rx_freq+rx_correct), 0)
+        self.uhd_usrp_source_0_0.set_gain(rx_gain, 0)
+        self.uhd_usrp_source_0_0.set_antenna('RX2', 0)
         self.uhd_usrp_sink_0 = uhd.usrp_sink(
         	",".join(("", "")),
         	uhd.stream_args(
@@ -54,34 +70,28 @@ class tx_scram_sock(gr.top_block):
         self.uhd_usrp_sink_0.set_center_freq(uhd.tune_request(tx_freq+tx_correct, tx_offset), 0)
         self.uhd_usrp_sink_0.set_gain(tx_gain, 0)
         self.uhd_usrp_sink_0.set_antenna('TX/RX', 0)
-        self.digital_map_bb_0 = digital.map_bb((1,0))
-        self.digital_dxpsk_mod_0 = digital.dbpsk_mod(
-        	samples_per_symbol=samps_per_symb,
-        	excess_bw=alpha,
-        	mod_code="gray",
-        	verbose=False,
-        	log=False)
-
-        self.blocks_stream_mux_0 = blocks.stream_mux(gr.sizeof_char*1, (768,5232))
-        self.blocks_socket_pdu_2 = blocks.socket_pdu("UDP_SERVER", addr, '52002', 10000, False)
+        self.tx_ao40_dbpsk_hier_0 = tx_ao40_dbpsk_hier(
+            alpha=0.5,
+            bb_gain=.5,
+            samp_rate=500e3,
+            samps_per_symb=4,
+        )
+        self.fsk_rx_hier_0 = fsk_rx_hier(
+            baud=10000,
+            samp_rate=500e3,
+            lpf_cutoff=15e3,
+            lpf_trans=1e3,
+            fsk_dev=10000,
+        )
         self.blocks_socket_pdu_1 = blocks.socket_pdu("TCP_SERVER", addr, '52001', 10000, False)
-        self.blocks_pack_k_bits_bb_0 = blocks.pack_k_bits_bb(8)
-        self.blocks_multiply_const_vxx_0 = blocks.multiply_const_vcc((bb_gain, ))
-        self.analog_random_source_x_0 = blocks.vector_source_b(map(int, numpy.random.randint(0, 1, 768)), True)
 
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.blocks_socket_pdu_1, 'pdus'), (self.vtgs_ao40_encoder_0, 'in'))
-        self.msg_connect((self.blocks_socket_pdu_2, 'pdus'), (self.blocks_socket_pdu_1, 'pdus'))
-        self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_mux_0, 0))
-        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.uhd_usrp_sink_0, 0))
-        self.connect((self.blocks_pack_k_bits_bb_0, 0), (self.digital_dxpsk_mod_0, 0))
-        self.connect((self.blocks_stream_mux_0, 0), (self.digital_map_bb_0, 0))
-        self.connect((self.digital_dxpsk_mod_0, 0), (self.blocks_multiply_const_vxx_0, 0))
-        self.connect((self.digital_map_bb_0, 0), (self.vtgs_mult_scrambler_0, 0))
-        self.connect((self.vtgs_ao40_encoder_0, 0), (self.blocks_stream_mux_0, 1))
-        self.connect((self.vtgs_mult_scrambler_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
+        self.msg_connect((self.blocks_socket_pdu_1, 'pdus'), (self.tx_ao40_dbpsk_hier_0, 'in'))
+        self.msg_connect((self.fsk_rx_hier_0, 'out'), (self.blocks_socket_pdu_1, 'pdus'))
+        self.connect((self.tx_ao40_dbpsk_hier_0, 0), (self.uhd_usrp_sink_0, 0))
+        self.connect((self.uhd_usrp_source_0_0, 0), (self.fsk_rx_hier_0, 0))
 
     def get_addr(self):
         return self.addr
@@ -100,7 +110,6 @@ class tx_scram_sock(gr.top_block):
 
     def set_bb_gain(self, bb_gain):
         self.bb_gain = bb_gain
-        self.blocks_multiply_const_vxx_0.set_k((self.bb_gain, ))
 
     def get_port(self):
         return self.port
@@ -108,11 +117,27 @@ class tx_scram_sock(gr.top_block):
     def set_port(self, port):
         self.port = port
 
+    def get_rx_freq(self):
+        return self.rx_freq
+
+    def set_rx_freq(self, rx_freq):
+        self.rx_freq = rx_freq
+        self.uhd_usrp_source_0_0.set_center_freq(uhd.tune_request(self.rx_freq+self.rx_correct), 0)
+
+    def get_rx_gain(self):
+        return self.rx_gain
+
+    def set_rx_gain(self, rx_gain):
+        self.rx_gain = rx_gain
+        self.uhd_usrp_source_0_0.set_gain(self.rx_gain, 0)
+
+
     def get_samp_rate(self):
         return self.samp_rate
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
+        self.uhd_usrp_source_0_0.set_samp_rate(self.samp_rate)
         self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
 
     def get_samps_per_symb(self):
@@ -150,6 +175,19 @@ class tx_scram_sock(gr.top_block):
         self.tx_offset = tx_offset
         self.uhd_usrp_sink_0.set_center_freq(uhd.tune_request(self.tx_freq+self.tx_correct, self.tx_offset), 0)
 
+    def get_rx_correct(self):
+        return self.rx_correct
+
+    def set_rx_correct(self, rx_correct):
+        self.rx_correct = rx_correct
+        self.uhd_usrp_source_0_0.set_center_freq(uhd.tune_request(self.rx_freq+self.rx_correct), 0)
+
+    def get_rx_offset(self):
+        return self.rx_offset
+
+    def set_rx_offset(self, rx_offset):
+        self.rx_offset = rx_offset
+
 
 def argument_parser():
     parser = OptionParser(usage="%prog: [options]", option_class=eng_option)
@@ -160,11 +198,17 @@ def argument_parser():
         "", "--alpha", dest="alpha", type="eng_float", default=eng_notation.num_to_str(0.5),
         help="Set alpha [default=%default]")
     parser.add_option(
-        "", "--bb-gain", dest="bb_gain", type="eng_float", default=eng_notation.num_to_str(.4),
+        "", "--bb-gain", dest="bb_gain", type="eng_float", default=eng_notation.num_to_str(.5),
         help="Set bb_gain [default=%default]")
     parser.add_option(
         "", "--port", dest="port", type="string", default='52001',
         help="Set port [default=%default]")
+    parser.add_option(
+        "", "--rx-freq", dest="rx_freq", type="eng_float", default=eng_notation.num_to_str(433),
+        help="Set RX Freq [default=%default]")
+    parser.add_option(
+        "", "--rx-gain", dest="rx_gain", type="intx", default=20,
+        help="Set RX Gain [default=%default]")
     parser.add_option(
         "", "--samp-rate", dest="samp_rate", type="eng_float", default=eng_notation.num_to_str(500e3),
         help="Set samp_rate [default=%default]")
@@ -178,19 +222,25 @@ def argument_parser():
         "", "--tx-freq", dest="tx_freq", type="eng_float", default=eng_notation.num_to_str(2395e6),
         help="Set tx_freq [default=%default]")
     parser.add_option(
-        "", "--tx-gain", dest="tx_gain", type="eng_float", default=eng_notation.num_to_str(75),
+        "", "--tx-gain", dest="tx_gain", type="eng_float", default=eng_notation.num_to_str(20),
         help="Set tx_gain [default=%default]")
     parser.add_option(
-        "", "--tx-offset", dest="tx_offset", type="eng_float", default=eng_notation.num_to_str(50e3),
+        "", "--tx-offset", dest="tx_offset", type="eng_float", default=eng_notation.num_to_str(0),
         help="Set tx_offset [default=%default]")
+    parser.add_option(
+        "", "--rx-correct", dest="rx_correct", type="eng_float", default=eng_notation.num_to_str(0),
+        help="Set rx_correct [default=%default]")
+    parser.add_option(
+        "", "--rx-offset", dest="rx_offset", type="eng_float", default=eng_notation.num_to_str(samp_rate/2),
+        help="Set rx_offset [default=%default]")
     return parser
 
 
-def main(top_block_cls=tx_scram_sock, options=None):
+def main(top_block_cls=rocksat_cmd, options=None):
     if options is None:
         options, _ = argument_parser().parse_args()
 
-    tb = top_block_cls(addr=options.addr, alpha=options.alpha, bb_gain=options.bb_gain, port=options.port, samp_rate=options.samp_rate, samps_per_symb=options.samps_per_symb, tx_correct=options.tx_correct, tx_freq=options.tx_freq, tx_gain=options.tx_gain, tx_offset=options.tx_offset)
+    tb = top_block_cls(addr=options.addr, alpha=options.alpha, bb_gain=options.bb_gain, port=options.port, rx_freq=options.rx_freq, rx_gain=options.rx_gain, samp_rate=options.samp_rate, samps_per_symb=options.samps_per_symb, tx_correct=options.tx_correct, tx_freq=options.tx_freq, tx_gain=options.tx_gain, tx_offset=options.tx_offset, rx_correct=options.rx_correct, rx_offset=options.rx_offset)
     tb.start()
     try:
         raw_input('Press Enter to quit: ')

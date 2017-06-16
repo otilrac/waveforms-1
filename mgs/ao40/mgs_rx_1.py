@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: MGS Rocksat Receiver v1.0
-# Generated: Thu May 25 18:34:27 2017
+# Generated: Fri Jun 16 15:46:18 2017
 ##################################################
 
 if __name__ == '__main__':
@@ -28,7 +28,9 @@ from gnuradio import uhd
 from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
 from gnuradio.qtgui import Range, RangeWidget
+from grc_gnuradio import blks2 as grc_blks2
 from optparse import OptionParser
+import kiss
 import mapper
 import pmt,struct,numpy,math
 import pyqt
@@ -41,7 +43,7 @@ from gnuradio import qtgui
 
 class mgs_rx_1(gr.top_block, Qt.QWidget):
 
-    def __init__(self, ip='127.0.0.1', iq_file='./rocksat_125kbd_500ksps_date_comment.dat', meta_rate=.1, port='52001', record_iq=0, record_rfo=0, record_snr=0, rfo_file='./rocksat_rfo_date_comment.meta', snr_file='./rocksat_snr_date_comment.meta'):
+    def __init__(self, bb_gain=1, ip='0.0.0.0', iq_file='./rocksat_125kbd_500ksps_date_comment.dat', meta_rate=.1, port='52001', record_iq=0, record_rfo=0, record_snr=0, rfo_file='./rocksat_rfo_date_comment.meta', snr_file='./rocksat_snr_date_comment.meta', tx_correct=0, tx_freq=433e6, tx_offset=250e3):
         gr.top_block.__init__(self, "MGS Rocksat Receiver v1.0")
         Qt.QWidget.__init__(self)
         self.setWindowTitle("MGS Rocksat Receiver v1.0")
@@ -68,6 +70,7 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         ##################################################
         # Parameters
         ##################################################
+        self.bb_gain = bb_gain
         self.ip = ip
         self.iq_file = iq_file
         self.meta_rate = meta_rate
@@ -77,6 +80,9 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         self.record_snr = record_snr
         self.rfo_file = rfo_file
         self.snr_file = snr_file
+        self.tx_correct = tx_correct
+        self.tx_freq = tx_freq
+        self.tx_offset = tx_offset
 
         ##################################################
         # Variables
@@ -84,10 +90,13 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate = 500e3
         self.baud = baud = 125e3
         self.samps_per_symb = samps_per_symb = int(samp_rate/baud)
+        self.rx_freq = rx_freq = 2395e6
         self.alpha = alpha = 0.5
+        self.uplink_label = uplink_label = ''
+        self.tx_gain = tx_gain = 70
         self.rx_offset = rx_offset = 250e3
         self.rx_gain = rx_gain = 25
-        self.rx_freq = rx_freq = 2395e6
+        self.rx_freq_lbl = rx_freq_lbl = "{:4.3f}".format(rx_freq/1e6)
 
         self.rrc_filter_taps = rrc_filter_taps = firdes.root_raised_cosine(32, 1.0, 1.0/(samps_per_symb*32), alpha, samps_per_symb*32)
 
@@ -101,14 +110,29 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         ##################################################
         # Blocks
         ##################################################
+        self._tx_gain_range = Range(0, 86, 1, 70, 200)
+        self._tx_gain_win = RangeWidget(self._tx_gain_range, self.set_tx_gain, 'TX Gain', "counter_slider", float)
+        self.top_grid_layout.addWidget(self._tx_gain_win, 10,8,1,4)
         self._rx_gain_range = Range(0, 86, 1, 25, 200)
         self._rx_gain_win = RangeWidget(self._rx_gain_range, self.set_rx_gain, 'RX Gain', "counter_slider", float)
-        self.top_grid_layout.addWidget(self._rx_gain_win, 6,8,1,4)
+        self.top_grid_layout.addWidget(self._rx_gain_win, 3,8,1,4)
         self._khz_offset_range = Range(-150, 150, 1, 0, 200)
         self._khz_offset_win = RangeWidget(self._khz_offset_range, self.set_khz_offset, 'Offset [kHz]', "counter_slider", float)
-        self.top_grid_layout.addWidget(self._khz_offset_win, 7,8,1,4)
+        self.top_grid_layout.addWidget(self._khz_offset_win, 4,8,1,4)
         self.vtgs_mult_descrambler_0 = vtgs.mult_descrambler(17, 0x3FFFF)
         self.vtgs_ao40_decoder_0_0 = vtgs.ao40_decoder()
+        self._uplink_label_tool_bar = Qt.QToolBar(self)
+
+        if None:
+          self._uplink_label_formatter = None
+        else:
+          self._uplink_label_formatter = lambda x: str(x)
+
+        self._uplink_label_tool_bar.addWidget(Qt.QLabel('TX MSG'+": "))
+        self._uplink_label_label = Qt.QLabel(str(self._uplink_label_formatter(self.uplink_label)))
+        self._uplink_label_tool_bar.addWidget(self._uplink_label_label)
+        self.top_grid_layout.addWidget(self._uplink_label_tool_bar, 9,8,1,1)
+
         self.uhd_usrp_source_0 = uhd.usrp_source(
         	",".join(("", "")),
         	uhd.stream_args(
@@ -120,6 +144,35 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         self.uhd_usrp_source_0.set_center_freq(uhd.tune_request(rx_freq, rx_offset), 0)
         self.uhd_usrp_source_0.set_gain(rx_gain, 0)
         self.uhd_usrp_source_0.set_antenna('RX2', 0)
+        self.uhd_usrp_sink_0 = uhd.usrp_sink(
+        	",".join(("", "")),
+        	uhd.stream_args(
+        		cpu_format="fc32",
+        		channels=range(1),
+        	),
+        )
+        self.uhd_usrp_sink_0.set_samp_rate(samp_rate)
+        self.uhd_usrp_sink_0.set_center_freq(uhd.tune_request(tx_freq+tx_correct, tx_offset), 0)
+        self.uhd_usrp_sink_0.set_gain(tx_gain, 0)
+        self.uhd_usrp_sink_0.set_antenna('TX/RX', 0)
+        self._rx_freq_lbl_tool_bar = Qt.QToolBar(self)
+
+        if None:
+          self._rx_freq_lbl_formatter = None
+        else:
+          self._rx_freq_lbl_formatter = lambda x: str(x)
+
+        self._rx_freq_lbl_tool_bar.addWidget(Qt.QLabel('RX Freq [MHz]'+": "))
+        self._rx_freq_lbl_label = Qt.QLabel(str(self._rx_freq_lbl_formatter(self.rx_freq_lbl)))
+        self._rx_freq_lbl_tool_bar.addWidget(self._rx_freq_lbl_label)
+        self.top_grid_layout.addWidget(self._rx_freq_lbl_tool_bar, 0,10,1,2)
+
+        self.rational_resampler_xxx_2 = filter.rational_resampler_ccc(
+                interpolation=1,
+                decimation=10,
+                taps=None,
+                fractional_bw=None,
+        )
         self.rational_resampler_xxx_1 = filter.rational_resampler_ccc(
                 interpolation=1,
                 decimation=8,
@@ -167,7 +220,7 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         self.qtgui_waterfall_sink_x_0.set_intensity_range(-130, -20)
 
         self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_0_win, 8,0,8,8)
+        self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_0_win, 5,0,4,8)
         self.qtgui_number_sink_2 = qtgui.number_sink(
             gr.sizeof_float,
             0,
@@ -260,7 +313,50 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
 
         self.qtgui_number_sink_0.enable_autoscale(False)
         self._qtgui_number_sink_0_win = sip.wrapinstance(self.qtgui_number_sink_0.pyqwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_number_sink_0_win, 0,8,1,4)
+        self.top_grid_layout.addWidget(self._qtgui_number_sink_0_win, 0,8,1,2)
+        self.qtgui_freq_sink_x_1 = qtgui.freq_sink_c(
+        	1024, #size
+        	firdes.WIN_BLACKMAN_hARRIS, #wintype
+        	0, #fc
+        	samp_rate/10, #bw
+        	"TX Spectrum", #name
+        	1 #number of inputs
+        )
+        self.qtgui_freq_sink_x_1.set_update_time(0.10)
+        self.qtgui_freq_sink_x_1.set_y_axis(-140, 10)
+        self.qtgui_freq_sink_x_1.set_y_label('Relative Gain', 'dB')
+        self.qtgui_freq_sink_x_1.set_trigger_mode(qtgui.TRIG_MODE_FREE, 0.0, 0, "")
+        self.qtgui_freq_sink_x_1.enable_autoscale(True)
+        self.qtgui_freq_sink_x_1.enable_grid(False)
+        self.qtgui_freq_sink_x_1.set_fft_average(1.0)
+        self.qtgui_freq_sink_x_1.enable_axis_labels(True)
+        self.qtgui_freq_sink_x_1.enable_control_panel(False)
+
+        if not False:
+          self.qtgui_freq_sink_x_1.disable_legend()
+
+        if "complex" == "float" or "complex" == "msg_float":
+          self.qtgui_freq_sink_x_1.set_plot_pos_half(not True)
+
+        labels = ['', '', '', '', '',
+                  '', '', '', '', '']
+        widths = [1, 1, 1, 1, 1,
+                  1, 1, 1, 1, 1]
+        colors = ["blue", "red", "green", "black", "cyan",
+                  "magenta", "yellow", "dark red", "dark green", "dark blue"]
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+                  1.0, 1.0, 1.0, 1.0, 1.0]
+        for i in xrange(1):
+            if len(labels[i]) == 0:
+                self.qtgui_freq_sink_x_1.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_freq_sink_x_1.set_line_label(i, labels[i])
+            self.qtgui_freq_sink_x_1.set_line_width(i, widths[i])
+            self.qtgui_freq_sink_x_1.set_line_color(i, colors[i])
+            self.qtgui_freq_sink_x_1.set_line_alpha(i, alphas[i])
+
+        self._qtgui_freq_sink_x_1_win = sip.wrapinstance(self.qtgui_freq_sink_x_1.pyqwidget(), Qt.QWidget)
+        self.top_grid_layout.addWidget(self._qtgui_freq_sink_x_1_win, 9,0,4,8)
         self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
         	1024*4, #size
         	firdes.WIN_BLACKMAN_hARRIS, #wintype
@@ -303,7 +399,7 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
             self.qtgui_freq_sink_x_0.set_line_alpha(i, alphas[i])
 
         self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_freq_sink_x_0_win, 0,0,8,8)
+        self.top_grid_layout.addWidget(self._qtgui_freq_sink_x_0_win, 0,0,5,8)
         self.qtgui_const_sink_x_0 = qtgui.const_sink_c(
         	1024, #size
         	"", #name
@@ -344,34 +440,53 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
             self.qtgui_const_sink_x_0.set_line_alpha(i, alphas[i])
 
         self._qtgui_const_sink_x_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_const_sink_x_0_win, 8,8,8,4)
-        self.pyqt_text_output_0_0 = pyqt.text_output()
-        self._pyqt_text_output_0_0_win = self.pyqt_text_output_0_0;
-        self.top_grid_layout.addWidget(self._pyqt_text_output_0_0_win, 16,6,4,6)
-        self.pyqt_text_output_0 = pyqt.text_output()
-        self._pyqt_text_output_0_win = self.pyqt_text_output_0;
-        self.top_grid_layout.addWidget(self._pyqt_text_output_0_win, 16,0,4,6)
+        self.top_grid_layout.addWidget(self._qtgui_const_sink_x_0_win, 5,8,4,4)
+        self.pyqt_text_input_0 = pyqt.text_input()
+        self._pyqt_text_input_0_win = self.pyqt_text_input_0;
+        self.top_grid_layout.addWidget(self._pyqt_text_input_0_win, 9,9,1,3)
         self.mapper_demapper_soft_0 = mapper.demapper_soft(mapper.BPSK, ([0,1]))
         self.low_pass_filter_0_0 = filter.fir_filter_ccf(1, firdes.low_pass(
         	1, samp_rate, (baud *(1+alpha) )/2, 1000, firdes.WIN_HAMMING, 6.76))
+        self.kiss_hdlc_framer_0 = kiss.hdlc_framer(preamble_bytes=48, postamble_bytes=10)
         self.freq_xlating_fir_filter_xxx_0 = filter.freq_xlating_fir_filter_ccc(1, (lpf_taps), khz_offset*1000, samp_rate)
+        self.digital_scrambler_bb_0 = digital.scrambler_bb(0x21, 0x0, 16)
         self.digital_pfb_clock_sync_xxx_0_0 = digital.pfb_clock_sync_ccf(samps_per_symb, math.pi*2/100, (rrc_filter_taps), 32, 16, 1.5, 1)
+        self.digital_gmsk_mod_0 = digital.gmsk_mod(
+        	samples_per_symbol=50,
+        	bt=alpha,
+        	verbose=False,
+        	log=False,
+        )
         self.digital_diff_decoder_bb_0 = digital.diff_decoder_bb(2)
         self.digital_costas_loop_cc_0_0 = digital.costas_loop_cc(math.pi*2/100, 2, False)
         self.digital_costas_loop_cc_0 = digital.costas_loop_cc(math.pi*2/100, 2, False)
         self.digital_binary_slicer_fb_0 = digital.binary_slicer_fb()
+        self.blocks_socket_pdu_0_1 = blocks.socket_pdu("TCP_SERVER", ip, '52003', 1024, False)
         self.blocks_socket_pdu_0 = blocks.socket_pdu("UDP_CLIENT", ip, port, 1024, False)
+        self.blocks_pdu_to_tagged_stream_0_0 = blocks.pdu_to_tagged_stream(blocks.byte_t, 'packet_len')
+        self.blocks_pack_k_bits_bb_0 = blocks.pack_k_bits_bb(8)
+        self.blocks_null_sink_0 = blocks.null_sink(gr.sizeof_gr_complex*1)
         self.blocks_nlog10_ff_0_1 = blocks.nlog10_ff(10, 1, 0)
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
+        self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_vcc((bb_gain, ))
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_vff((mult, ))
         self.blocks_moving_average_xx_0_0_1 = blocks.moving_average_ff(100000, 0.00001, 4000)
         self.blocks_moving_average_xx_0_0 = blocks.moving_average_ff(1000, 0.001, 4000)
         self.blocks_moving_average_xx_0 = blocks.moving_average_ff(100000, 0.00001, 4000)
+        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_gr_complex*1, iq_file, False)
+        self.blocks_file_sink_0.set_unbuffered(False)
         self.blocks_divide_xx_0 = blocks.divide_ff(1)
         self.blocks_complex_to_mag_squared_0_0 = blocks.complex_to_mag_squared(1)
         self.blocks_complex_to_mag_squared_0 = blocks.complex_to_mag_squared(1)
         self.blocks_complex_to_mag_0 = blocks.complex_to_mag(1)
         self.blocks_add_const_vxx_0 = blocks.add_const_vff((-1, ))
+        self.blks2_selector_0 = grc_blks2.selector(
+        	item_size=gr.sizeof_gr_complex*1,
+        	num_inputs=1,
+        	num_outputs=2,
+        	input_index=0,
+        	output_index=int(record_iq),
+        )
         self.analog_sig_source_x_0 = analog.sig_source_c(samp_rate, analog.GR_COS_WAVE, 125e3, 1, 0)
         self.analog_agc2_xx_0_0 = analog.agc2_cc(1e-3, 1e-2, 1.0, 1.0)
         self.analog_agc2_xx_0_0.set_max_gain(65536)
@@ -379,11 +494,15 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         ##################################################
         # Connections
         ##################################################
+        self.msg_connect((self.blocks_socket_pdu_0_1, 'pdus'), (self.kiss_hdlc_framer_0, 'in'))
+        self.msg_connect((self.kiss_hdlc_framer_0, 'out'), (self.blocks_pdu_to_tagged_stream_0_0, 'pdus'))
+        self.msg_connect((self.pyqt_text_input_0, 'pdus'), (self.kiss_hdlc_framer_0, 'in'))
         self.msg_connect((self.vtgs_ao40_decoder_0_0, 'valid_frames'), (self.blocks_socket_pdu_0, 'pdus'))
-        self.msg_connect((self.vtgs_ao40_decoder_0_0, 'valid_frames'), (self.pyqt_text_output_0, 'pdus'))
-        self.msg_connect((self.vtgs_ao40_decoder_0_0, 'invalid_frames'), (self.pyqt_text_output_0_0, 'pdus'))
+        self.msg_connect((self.vtgs_ao40_decoder_0_0, 'valid_frames'), (self.blocks_socket_pdu_0_1, 'pdus'))
         self.connect((self.analog_agc2_xx_0_0, 0), (self.digital_costas_loop_cc_0_0, 0))
         self.connect((self.analog_sig_source_x_0, 0), (self.blocks_multiply_xx_0, 1))
+        self.connect((self.blks2_selector_0, 1), (self.blocks_file_sink_0, 0))
+        self.connect((self.blks2_selector_0, 0), (self.blocks_null_sink_0, 0))
         self.connect((self.blocks_add_const_vxx_0, 0), (self.qtgui_number_sink_2, 0))
         self.connect((self.blocks_complex_to_mag_0, 0), (self.blocks_moving_average_xx_0_0, 0))
         self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.blocks_divide_xx_0, 0))
@@ -393,8 +512,12 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_moving_average_xx_0_0, 0), (self.blocks_add_const_vxx_0, 0))
         self.connect((self.blocks_moving_average_xx_0_0_1, 0), (self.qtgui_number_sink_0_0_0_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_moving_average_xx_0, 0))
+        self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.rational_resampler_xxx_2, 0))
+        self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.uhd_usrp_sink_0, 0))
         self.connect((self.blocks_multiply_xx_0, 0), (self.rational_resampler_xxx_1, 0))
         self.connect((self.blocks_nlog10_ff_0_1, 0), (self.blocks_moving_average_xx_0_0_1, 0))
+        self.connect((self.blocks_pack_k_bits_bb_0, 0), (self.digital_gmsk_mod_0, 0))
+        self.connect((self.blocks_pdu_to_tagged_stream_0_0, 0), (self.digital_scrambler_bb_0, 0))
         self.connect((self.digital_binary_slicer_fb_0, 0), (self.digital_diff_decoder_bb_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.blocks_complex_to_mag_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.mapper_demapper_soft_0, 0))
@@ -404,7 +527,9 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         self.connect((self.digital_costas_loop_cc_0_0, 0), (self.low_pass_filter_0_0, 0))
         self.connect((self.digital_costas_loop_cc_0_0, 0), (self.rational_resampler_xxx_0, 0))
         self.connect((self.digital_diff_decoder_bb_0, 0), (self.vtgs_mult_descrambler_0, 0))
+        self.connect((self.digital_gmsk_mod_0, 0), (self.blocks_multiply_const_vxx_0_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0_0, 0), (self.digital_costas_loop_cc_0, 0))
+        self.connect((self.digital_scrambler_bb_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
         self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.analog_agc2_xx_0_0, 0))
         self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.qtgui_freq_sink_x_0, 0))
         self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.qtgui_waterfall_sink_x_0, 0))
@@ -413,6 +538,8 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         self.connect((self.mapper_demapper_soft_0, 0), (self.digital_binary_slicer_fb_0, 0))
         self.connect((self.rational_resampler_xxx_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
         self.connect((self.rational_resampler_xxx_1, 0), (self.blocks_complex_to_mag_squared_0_0, 0))
+        self.connect((self.rational_resampler_xxx_2, 0), (self.qtgui_freq_sink_x_1, 0))
+        self.connect((self.uhd_usrp_source_0, 0), (self.blks2_selector_0, 0))
         self.connect((self.uhd_usrp_source_0, 0), (self.freq_xlating_fir_filter_xxx_0, 0))
         self.connect((self.vtgs_mult_descrambler_0, 0), (self.vtgs_ao40_decoder_0_0, 0))
 
@@ -420,6 +547,13 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         self.settings = Qt.QSettings("GNU Radio", "mgs_rx_1")
         self.settings.setValue("geometry", self.saveGeometry())
         event.accept()
+
+    def get_bb_gain(self):
+        return self.bb_gain
+
+    def set_bb_gain(self, bb_gain):
+        self.bb_gain = bb_gain
+        self.blocks_multiply_const_vxx_0_0.set_k((self.bb_gain, ))
 
     def get_ip(self):
         return self.ip
@@ -432,6 +566,7 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
 
     def set_iq_file(self, iq_file):
         self.iq_file = iq_file
+        self.blocks_file_sink_0.open(self.iq_file)
 
     def get_meta_rate(self):
         return self.meta_rate
@@ -450,6 +585,7 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
 
     def set_record_iq(self, record_iq):
         self.record_iq = record_iq
+        self.blks2_selector_0.set_output_index(int(int(self.record_iq)))
 
     def get_record_rfo(self):
         return self.record_rfo
@@ -475,6 +611,27 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
     def set_snr_file(self, snr_file):
         self.snr_file = snr_file
 
+    def get_tx_correct(self):
+        return self.tx_correct
+
+    def set_tx_correct(self, tx_correct):
+        self.tx_correct = tx_correct
+        self.uhd_usrp_sink_0.set_center_freq(uhd.tune_request(self.tx_freq+self.tx_correct, self.tx_offset), 0)
+
+    def get_tx_freq(self):
+        return self.tx_freq
+
+    def set_tx_freq(self, tx_freq):
+        self.tx_freq = tx_freq
+        self.uhd_usrp_sink_0.set_center_freq(uhd.tune_request(self.tx_freq+self.tx_correct, self.tx_offset), 0)
+
+    def get_tx_offset(self):
+        return self.tx_offset
+
+    def set_tx_offset(self, tx_offset):
+        self.tx_offset = tx_offset
+        self.uhd_usrp_sink_0.set_center_freq(uhd.tune_request(self.tx_freq+self.tx_correct, self.tx_offset), 0)
+
     def get_samp_rate(self):
         return self.samp_rate
 
@@ -483,7 +640,9 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         self.set_samps_per_symb(int(self.samp_rate/self.baud))
         self.set_mult((self.samp_rate)/2/3.141593)
         self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
+        self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
         self.qtgui_waterfall_sink_x_0.set_frequency_range(0, self.samp_rate)
+        self.qtgui_freq_sink_x_1.set_frequency_range(0, self.samp_rate/10)
         self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate )
         self.low_pass_filter_0_0.set_taps(firdes.low_pass(1, self.samp_rate, (self.baud *(1+self.alpha) )/2, 1000, firdes.WIN_HAMMING, 6.76))
         self.analog_sig_source_x_0.set_sampling_freq(self.samp_rate)
@@ -502,12 +661,35 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
     def set_samps_per_symb(self, samps_per_symb):
         self.samps_per_symb = samps_per_symb
 
+    def get_rx_freq(self):
+        return self.rx_freq
+
+    def set_rx_freq(self, rx_freq):
+        self.rx_freq = rx_freq
+        self.uhd_usrp_source_0.set_center_freq(uhd.tune_request(self.rx_freq, self.rx_offset), 0)
+        self.set_rx_freq_lbl(self._rx_freq_lbl_formatter("{:4.3f}".format(self.rx_freq/1e6)))
+
     def get_alpha(self):
         return self.alpha
 
     def set_alpha(self, alpha):
         self.alpha = alpha
         self.low_pass_filter_0_0.set_taps(firdes.low_pass(1, self.samp_rate, (self.baud *(1+self.alpha) )/2, 1000, firdes.WIN_HAMMING, 6.76))
+
+    def get_uplink_label(self):
+        return self.uplink_label
+
+    def set_uplink_label(self, uplink_label):
+        self.uplink_label = uplink_label
+        Qt.QMetaObject.invokeMethod(self._uplink_label_label, "setText", Qt.Q_ARG("QString", self.uplink_label))
+
+    def get_tx_gain(self):
+        return self.tx_gain
+
+    def set_tx_gain(self, tx_gain):
+        self.tx_gain = tx_gain
+        self.uhd_usrp_sink_0.set_gain(self.tx_gain, 0)
+
 
     def get_rx_offset(self):
         return self.rx_offset
@@ -524,12 +706,12 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         self.uhd_usrp_source_0.set_gain(self.rx_gain, 0)
 
 
-    def get_rx_freq(self):
-        return self.rx_freq
+    def get_rx_freq_lbl(self):
+        return self.rx_freq_lbl
 
-    def set_rx_freq(self, rx_freq):
-        self.rx_freq = rx_freq
-        self.uhd_usrp_source_0.set_center_freq(uhd.tune_request(self.rx_freq, self.rx_offset), 0)
+    def set_rx_freq_lbl(self, rx_freq_lbl):
+        self.rx_freq_lbl = rx_freq_lbl
+        Qt.QMetaObject.invokeMethod(self._rx_freq_lbl_label, "setText", Qt.Q_ARG("QString", self.rx_freq_lbl))
 
     def get_rrc_filter_taps(self):
         return self.rrc_filter_taps
@@ -569,8 +751,11 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
 def argument_parser():
     parser = OptionParser(usage="%prog: [options]", option_class=eng_option)
     parser.add_option(
-        "-a", "--ip", dest="ip", type="string", default='127.0.0.1',
-        help="Set 127.0.0.1 [default=%default]")
+        "", "--bb-gain", dest="bb_gain", type="eng_float", default=eng_notation.num_to_str(1),
+        help="Set bb_gain [default=%default]")
+    parser.add_option(
+        "-a", "--ip", dest="ip", type="string", default='0.0.0.0',
+        help="Set 0.0.0.0 [default=%default]")
     parser.add_option(
         "", "--iq-file", dest="iq_file", type="string", default='./rocksat_125kbd_500ksps_date_comment.dat',
         help="Set iq_file [default=%default]")
@@ -595,6 +780,15 @@ def argument_parser():
     parser.add_option(
         "", "--snr-file", dest="snr_file", type="string", default='./rocksat_snr_date_comment.meta',
         help="Set snr_file [default=%default]")
+    parser.add_option(
+        "", "--tx-correct", dest="tx_correct", type="eng_float", default=eng_notation.num_to_str(0),
+        help="Set tx_correct [default=%default]")
+    parser.add_option(
+        "", "--tx-freq", dest="tx_freq", type="eng_float", default=eng_notation.num_to_str(433e6),
+        help="Set tx_freq [default=%default]")
+    parser.add_option(
+        "", "--tx-offset", dest="tx_offset", type="eng_float", default=eng_notation.num_to_str(250e3),
+        help="Set tx_offset [default=%default]")
     return parser
 
 
@@ -608,7 +802,7 @@ def main(top_block_cls=mgs_rx_1, options=None):
         Qt.QApplication.setGraphicsSystem(style)
     qapp = Qt.QApplication(sys.argv)
 
-    tb = top_block_cls(ip=options.ip, iq_file=options.iq_file, meta_rate=options.meta_rate, port=options.port, record_iq=options.record_iq, record_rfo=options.record_rfo, record_snr=options.record_snr, rfo_file=options.rfo_file, snr_file=options.snr_file)
+    tb = top_block_cls(bb_gain=options.bb_gain, ip=options.ip, iq_file=options.iq_file, meta_rate=options.meta_rate, port=options.port, record_iq=options.record_iq, record_rfo=options.record_rfo, record_snr=options.record_snr, rfo_file=options.rfo_file, snr_file=options.snr_file, tx_correct=options.tx_correct, tx_freq=options.tx_freq, tx_offset=options.tx_offset)
     tb.start()
     tb.show()
 

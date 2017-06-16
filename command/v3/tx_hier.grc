@@ -46,7 +46,7 @@
     </param>
     <param>
       <key>id</key>
-      <value>tx_hier</value>
+      <value>tx_ao40_dbpsk_hier</value>
     </param>
     <param>
       <key>max_nouts</key>
@@ -78,7 +78,7 @@
     </param>
     <param>
       <key>title</key>
-      <value>tx_hier</value>
+      <value>AO40 DBPSK Transmitter</value>
     </param>
   </block>
   <block>

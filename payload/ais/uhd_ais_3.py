@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Uhd Ais 3
-# Generated: Sat May 27 01:58:26 2017
+# Generated: Thu Jun 15 08:35:59 2017
 ##################################################
 
 if __name__ == '__main__':
@@ -71,7 +71,6 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
         self.rx_gain = rx_gain = 45
         self.fsk_deviation = fsk_deviation = 10e3
         self.freq = freq = 162e6
-        self.filter_taps = filter_taps = firdes.low_pass(1,samp_rate, samp_rate/2, 50000, firdes.WIN_FLATTOP, 6.76)
 
         ##################################################
         # Blocks
@@ -254,8 +253,8 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
         self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.blocks_message_debug_0_1, 'print_pdu'))
         self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))
         self.msg_connect((self.ais_pdu_to_nmea_0, 'out'), (self.pyqt_text_output_0_0, 'pdus'))
-        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_message_debug_0_1, 'print_pdu'))
         self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_message_debug_0_1, 'print'))
+        self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_message_debug_0_1, 'print_pdu'))
         self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))
         self.msg_connect((self.ais_pdu_to_nmea_0_0, 'out'), (self.pyqt_text_output_0, 'pdus'))
         self.msg_connect((self.digital_hdlc_deframer_bp_0, 'out'), (self.ais_pdu_to_nmea_0, 'to_nmea'))
@@ -304,7 +303,6 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
         self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate/self.decim)
         self.low_pass_filter_0_0.set_taps(firdes.low_pass(1, self.samp_rate, 7e3, 1e3, firdes.WIN_HAMMING, 6.76))
         self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, 7e3, 1e3, firdes.WIN_HAMMING, 6.76))
-        self.set_filter_taps(firdes.low_pass(1,self.samp_rate, self.samp_rate/2, 50000, firdes.WIN_FLATTOP, 6.76))
         self.blocks_throttle_0.set_sample_rate(self.samp_rate*4)
         self.analog_sig_source_x_1.set_sampling_freq(self.samp_rate)
         self.analog_sig_source_x_0.set_sampling_freq(self.samp_rate)
@@ -356,12 +354,6 @@ class uhd_ais_3(gr.top_block, Qt.QWidget):
 
     def set_freq(self, freq):
         self.freq = freq
-
-    def get_filter_taps(self):
-        return self.filter_taps
-
-    def set_filter_taps(self, filter_taps):
-        self.filter_taps = filter_taps
 
 
 def main(top_block_cls=uhd_ais_3, options=None):

@@ -46,7 +46,7 @@
     </param>
     <param>
       <key>id</key>
-      <value>mgs_rx_1</value>
+      <value>mgs_trx_1</value>
     </param>
     <param>
       <key>max_nouts</key>
@@ -229,7 +229,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>"~/captures/{:s}".format(iq_fn)</value>
+      <value>"/home/zleffke/captures/rocksat/mgs/{:s}".format(iq_fn)</value>
     </param>
   </block>
   <block>
@@ -1595,7 +1595,7 @@
     </param>
     <param>
       <key>file</key>
-      <value>iq_file</value>
+      <value>iq_fp</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -2750,6 +2750,65 @@
     <param>
       <key>type</key>
       <value>"TCP_SERVER"</value>
+    </param>
+  </block>
+  <block>
+    <key>blocks_socket_pdu</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(48, 1552)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>host</key>
+      <value>ip</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_socket_pdu_0_2</value>
+    </param>
+    <param>
+      <key>mtu</key>
+      <value>1024</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>port</key>
+      <value>52002</value>
+    </param>
+    <param>
+      <key>tcp_no_delay</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>"UDP_SERVER"</value>
     </param>
   </block>
   <block>
@@ -6648,7 +6707,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>433e6</value>
+      <value>1265e6</value>
     </param>
   </block>
   <block>
@@ -10970,6 +11029,12 @@
   </connection>
   <connection>
     <source_block_id>blocks_socket_pdu_0_1</source_block_id>
+    <sink_block_id>kiss_hdlc_framer_0</sink_block_id>
+    <source_key>pdus</source_key>
+    <sink_key>in</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_socket_pdu_0_2</source_block_id>
     <sink_block_id>kiss_hdlc_framer_0</sink_block_id>
     <source_key>pdus</source_key>
     <sink_key>in</sink_key>

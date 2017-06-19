@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: MGS Rocksat Receiver v1.0
-# Generated: Sat Jun 17 10:57:07 2017
+# Generated: Sun Jun 18 01:51:27 2017
 ##################################################
 
 if __name__ == '__main__':
@@ -41,7 +41,7 @@ import vtgs
 from gnuradio import qtgui
 
 
-class mgs_rx_1(gr.top_block, Qt.QWidget):
+class mgs_trx_1(gr.top_block, Qt.QWidget):
 
     def __init__(self, bb_gain=1, gs_name='MGS', ip='0.0.0.0', iq_file='./rocksat_125kbd_500ksps_date_comment.dat', meta_rate=.1, port='52001', record_iq=0, record_rfo=0, record_snr=0, rfo_file='./rocksat_rfo_date_comment.meta', snr_file='./rocksat_snr_date_comment.meta', tx_correct=0, tx_freq=1265e6, tx_offset=250e3):
         gr.top_block.__init__(self, "MGS Rocksat Receiver v1.0")
@@ -64,7 +64,7 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("GNU Radio", "mgs_rx_1")
+        self.settings = Qt.QSettings("GNU Radio", "mgs_trx_1")
         self.restoreGeometry(self.settings.value("geometry").toByteArray())
 
         ##################################################
@@ -550,7 +550,7 @@ class mgs_rx_1(gr.top_block, Qt.QWidget):
         self.connect((self.vtgs_mult_descrambler_0, 0), (self.vtgs_ao40_decoder_0_0, 0))
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("GNU Radio", "mgs_rx_1")
+        self.settings = Qt.QSettings("GNU Radio", "mgs_trx_1")
         self.settings.setValue("geometry", self.saveGeometry())
         event.accept()
 
@@ -829,7 +829,7 @@ def argument_parser():
     return parser
 
 
-def main(top_block_cls=mgs_rx_1, options=None):
+def main(top_block_cls=mgs_trx_1, options=None):
     if options is None:
         options, _ = argument_parser().parse_args()
 

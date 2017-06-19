@@ -24,7 +24,7 @@ import time
 
 class cmd_trx(gr.top_block):
 
-    def __init__(self, addr='0.0.0.0', alpha=0.5, bb_gain=.4, fsk_dev=10000, lpf_cutoff=15e3, lpf_trans=1e3, port='52001', rx_baud=10000, rx_correct=0, rx_freq=433e6, rx_gain=20, samps_per_symb=2, tx_correct=0, tx_freq=2395e6, tx_gain=75, tx_offset=0):
+    def __init__(self, addr='0.0.0.0', alpha=0.5, bb_gain=.4, fsk_dev=10000, lpf_cutoff=15e3, lpf_trans=1e3, port='52001', rx_baud=10000, rx_correct=0, rx_freq=1265e6, rx_gain=20, samps_per_symb=2, tx_correct=0, tx_freq=2395e6, tx_gain=75, tx_offset=0):
         gr.top_block.__init__(self, "Cmd Trx")
 
         ##################################################
@@ -259,7 +259,7 @@ def argument_parser():
         "", "--rx-correct", dest="rx_correct", type="eng_float", default=eng_notation.num_to_str(0),
         help="Set rx_correct [default=%default]")
     parser.add_option(
-        "", "--rx-freq", dest="rx_freq", type="eng_float", default=eng_notation.num_to_str(433e6),
+        "", "--rx-freq", dest="rx_freq", type="eng_float", default=eng_notation.num_to_str(1265e6),
         help="Set RX Freq [default=%default]")
     parser.add_option(
         "", "--rx-gain", dest="rx_gain", type="intx", default=20,

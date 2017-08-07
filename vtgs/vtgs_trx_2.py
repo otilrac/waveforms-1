@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: VTGS Rocksat-X 2017 Transceiver v2.0
-# Generated: Sat Aug  5 01:39:02 2017
+# Generated: Sat Aug  5 13:50:31 2017
 ##################################################
 
 if __name__ == '__main__':
@@ -43,7 +43,7 @@ from gnuradio import qtgui
 
 class vtgs_trx_2(gr.top_block, Qt.QWidget):
 
-    def __init__(self, gs_name='VTGS', ip='0.0.0.0', iq_file='./rocksat_125kbd_500ksps_date_comment.dat', meta_rate=.1, port='52001', record_iq=0, record_rfo=0, record_snr=0, rfo_file='./rocksat_rfo_date_comment.meta', snr_file='./rocksat_snr_date_comment.meta', tx_correct=0, tx_freq=1265e6, tx_offset=250e3):
+    def __init__(self, gs_name='VTGS', ip='0.0.0.0', iq_file='./rocksat_125kbd_500ksps_date_comment.dat', meta_rate=.1, port='52001', record_iq=0, record_rfo=0, record_snr=0, rfo_file='./rocksat_rfo_date_comment.meta', snr_file='./rocksat_snr_date_comment.meta', tx_freq=1265e6, tx_offset=250e3):
         gr.top_block.__init__(self, "VTGS Rocksat-X 2017 Transceiver v2.0")
         Qt.QWidget.__init__(self)
         self.setWindowTitle("VTGS Rocksat-X 2017 Transceiver v2.0")
@@ -80,7 +80,6 @@ class vtgs_trx_2(gr.top_block, Qt.QWidget):
         self.record_snr = record_snr
         self.rfo_file = rfo_file
         self.snr_file = snr_file
-        self.tx_correct = tx_correct
         self.tx_freq = tx_freq
         self.tx_offset = tx_offset
 
@@ -95,7 +94,8 @@ class vtgs_trx_2(gr.top_block, Qt.QWidget):
         self.iq_fn = iq_fn = "{:s}_{:s}_{:s}k.fc32".format(gs_name, ts_str, str(int(samp_rate)/1000))
         self.alpha = alpha = 0.5
         self.uplink_label = uplink_label = ''
-        self.tx_gain = tx_gain = 15
+        self.tx_gain = tx_gain = 25
+        self.tx_correct = tx_correct = 2000
         self.rx_offset = rx_offset = 250e3
         self.rx_gain = rx_gain = 1
         self.rx_freq_lbl = rx_freq_lbl = "{:4.3f}".format(rx_freq/1e6)
@@ -109,21 +109,24 @@ class vtgs_trx_2(gr.top_block, Qt.QWidget):
         self.lo = lo = 1833e6
         self.khz_offset = khz_offset = 0
         self.iq_fp = iq_fp = "/captures/rocksat/{:s}".format(iq_fn)
-        self.bb_gain = bb_gain = .5
+        self.bb_gain = bb_gain = .75
 
         ##################################################
         # Blocks
         ##################################################
-        self._tx_gain_range = Range(0, 86, 1, 15, 200)
+        self._tx_gain_range = Range(0, 86, 1, 25, 200)
         self._tx_gain_win = RangeWidget(self._tx_gain_range, self.set_tx_gain, 'TX Gain', "counter_slider", float)
         self.top_grid_layout.addWidget(self._tx_gain_win, 10,8,1,4)
+        self._tx_correct_range = Range(-10000, 10000, 1, 2000, 200)
+        self._tx_correct_win = RangeWidget(self._tx_correct_range, self.set_tx_correct, "tx_correct", "counter_slider", float)
+        self.top_grid_layout.addWidget(self._tx_correct_win, 12,8,1,4)
         self._rx_gain_range = Range(0, 86, 1, 1, 200)
         self._rx_gain_win = RangeWidget(self._rx_gain_range, self.set_rx_gain, 'RX Gain', "counter_slider", float)
         self.top_grid_layout.addWidget(self._rx_gain_win, 3,8,1,4)
         self._khz_offset_range = Range(-150, 150, 1, 0, 200)
         self._khz_offset_win = RangeWidget(self._khz_offset_range, self.set_khz_offset, 'Offset [kHz]', "counter_slider", float)
         self.top_grid_layout.addWidget(self._khz_offset_win, 4,8,1,4)
-        self._bb_gain_range = Range(0, 1, .01, .5, 200)
+        self._bb_gain_range = Range(0, 1, .01, .75, 200)
         self._bb_gain_win = RangeWidget(self._bb_gain_range, self.set_bb_gain, 'bb_gain', "counter_slider", float)
         self.top_grid_layout.addWidget(self._bb_gain_win, 11,8,1,4)
         self.vtgs_mult_descrambler_0 = vtgs.mult_descrambler(17, 0x3FFFF)
@@ -133,7 +136,7 @@ class vtgs_trx_2(gr.top_block, Qt.QWidget):
         if None:
           self._uplink_label_formatter = None
         else:
-          self._uplink_label_formatter = lambda x: x
+          self._uplink_label_formatter = lambda x: str(x)
 
         self._uplink_label_tool_bar.addWidget(Qt.QLabel('TX MSG'+": "))
         self._uplink_label_label = Qt.QLabel(str(self._uplink_label_formatter(self.uplink_label)))
@@ -173,7 +176,7 @@ class vtgs_trx_2(gr.top_block, Qt.QWidget):
         if None:
           self._rx_freq_lbl_formatter = None
         else:
-          self._rx_freq_lbl_formatter = lambda x: x
+          self._rx_freq_lbl_formatter = lambda x: str(x)
 
         self._rx_freq_lbl_tool_bar.addWidget(Qt.QLabel('RX Freq [MHz]'+": "))
         self._rx_freq_lbl_label = Qt.QLabel(str(self._rx_freq_lbl_formatter(self.rx_freq_lbl)))
@@ -460,7 +463,7 @@ class vtgs_trx_2(gr.top_block, Qt.QWidget):
         self.mapper_demapper_soft_0 = mapper.demapper_soft(mapper.BPSK, ([0,1]))
         self.low_pass_filter_0_0 = filter.fir_filter_ccf(1, firdes.low_pass(
         	1, samp_rate, (baud *(1+alpha) )/2, 1000, firdes.WIN_HAMMING, 6.76))
-        self.kiss_hdlc_framer_0 = kiss.hdlc_framer(preamble_bytes=48, postamble_bytes=10)
+        self.kiss_hdlc_framer_0 = kiss.hdlc_framer(preamble_bytes=64, postamble_bytes=16)
         self.freq_xlating_fir_filter_xxx_0 = filter.freq_xlating_fir_filter_ccc(1, (lpf_taps), khz_offset*1000, samp_rate)
         self.digital_scrambler_bb_0 = digital.scrambler_bb(0x21, 0x0, 16)
         self.digital_pfb_clock_sync_xxx_0_0 = digital.pfb_clock_sync_ccf(samps_per_symb, math.pi*2/100, (rrc_filter_taps), 32, 16, 1.5, 1)
@@ -625,13 +628,6 @@ class vtgs_trx_2(gr.top_block, Qt.QWidget):
     def set_snr_file(self, snr_file):
         self.snr_file = snr_file
 
-    def get_tx_correct(self):
-        return self.tx_correct
-
-    def set_tx_correct(self, tx_correct):
-        self.tx_correct = tx_correct
-        self.uhd_usrp_sink_0.set_center_freq(uhd.tune_request(self.tx_freq+self.tx_correct, self.tx_offset), 0)
-
     def get_tx_freq(self):
         return self.tx_freq
 
@@ -710,7 +706,7 @@ class vtgs_trx_2(gr.top_block, Qt.QWidget):
 
     def set_uplink_label(self, uplink_label):
         self.uplink_label = uplink_label
-        Qt.QMetaObject.invokeMethod(self._uplink_label_label, "setText", Qt.Q_ARG("QString", str(self.uplink_label)))
+        Qt.QMetaObject.invokeMethod(self._uplink_label_label, "setText", Qt.Q_ARG("QString", self.uplink_label))
 
     def get_tx_gain(self):
         return self.tx_gain
@@ -719,6 +715,13 @@ class vtgs_trx_2(gr.top_block, Qt.QWidget):
         self.tx_gain = tx_gain
         self.uhd_usrp_sink_0.set_gain(self.tx_gain, 0)
 
+
+    def get_tx_correct(self):
+        return self.tx_correct
+
+    def set_tx_correct(self, tx_correct):
+        self.tx_correct = tx_correct
+        self.uhd_usrp_sink_0.set_center_freq(uhd.tune_request(self.tx_freq+self.tx_correct, self.tx_offset), 0)
 
     def get_rx_offset(self):
         return self.rx_offset
@@ -740,7 +743,7 @@ class vtgs_trx_2(gr.top_block, Qt.QWidget):
 
     def set_rx_freq_lbl(self, rx_freq_lbl):
         self.rx_freq_lbl = rx_freq_lbl
-        Qt.QMetaObject.invokeMethod(self._rx_freq_lbl_label, "setText", Qt.Q_ARG("QString", str(self.rx_freq_lbl)))
+        Qt.QMetaObject.invokeMethod(self._rx_freq_lbl_label, "setText", Qt.Q_ARG("QString", self.rx_freq_lbl))
 
     def get_rrc_filter_taps(self):
         return self.rrc_filter_taps
@@ -825,9 +828,6 @@ def argument_parser():
         "", "--snr-file", dest="snr_file", type="string", default='./rocksat_snr_date_comment.meta',
         help="Set snr_file [default=%default]")
     parser.add_option(
-        "", "--tx-correct", dest="tx_correct", type="eng_float", default=eng_notation.num_to_str(0),
-        help="Set tx_correct [default=%default]")
-    parser.add_option(
         "", "--tx-freq", dest="tx_freq", type="eng_float", default=eng_notation.num_to_str(1265e6),
         help="Set tx_freq [default=%default]")
     parser.add_option(
@@ -846,7 +846,7 @@ def main(top_block_cls=vtgs_trx_2, options=None):
         Qt.QApplication.setGraphicsSystem(style)
     qapp = Qt.QApplication(sys.argv)
 
-    tb = top_block_cls(gs_name=options.gs_name, ip=options.ip, iq_file=options.iq_file, meta_rate=options.meta_rate, port=options.port, record_iq=options.record_iq, record_rfo=options.record_rfo, record_snr=options.record_snr, rfo_file=options.rfo_file, snr_file=options.snr_file, tx_correct=options.tx_correct, tx_freq=options.tx_freq, tx_offset=options.tx_offset)
+    tb = top_block_cls(gs_name=options.gs_name, ip=options.ip, iq_file=options.iq_file, meta_rate=options.meta_rate, port=options.port, record_iq=options.record_iq, record_rfo=options.record_rfo, record_snr=options.record_snr, rfo_file=options.rfo_file, snr_file=options.snr_file, tx_freq=options.tx_freq, tx_offset=options.tx_offset)
     tb.start()
     tb.show()
 

@@ -1723,7 +1723,7 @@
     </param>
     <param>
       <key>file</key>
-      <value>/home/zleffke/captures/rocksat/mgs/MGS_20170617_151017.750783_UTC_500k.fc32</value>
+      <value>/captures/rocksat/testing/trimmed_500k.fc32</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -2594,7 +2594,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>2</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>

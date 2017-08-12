@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: VTGS Rocksat-X 2017 Transceiver v2.0
-# Generated: Sat Aug 12 12:50:07 2017
+# Generated: Sat Aug 12 12:57:37 2017
 ##################################################
 
 if __name__ == '__main__':
@@ -448,6 +448,7 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         self.digital_costas_loop_cc_0_0 = digital.costas_loop_cc(math.pi*2/100, 2, False)
         self.digital_costas_loop_cc_0 = digital.costas_loop_cc(math.pi*2/100, 2, False)
         self.digital_binary_slicer_fb_0 = digital.binary_slicer_fb()
+        self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
         self.blocks_socket_pdu_0_2 = blocks.socket_pdu("UDP_SERVER", ip, '52002', 1024, False)
         self.blocks_socket_pdu_0_1 = blocks.socket_pdu("TCP_SERVER", ip, port, 1024, False)
         self.blocks_pdu_to_tagged_stream_0_0 = blocks.pdu_to_tagged_stream(blocks.byte_t, 'packet_len')
@@ -464,7 +465,7 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         self.blocks_moving_average_xx_0 = blocks.moving_average_ff(100000, 0.00001, 4000)
         self.blocks_keep_one_in_n_0_0 = blocks.keep_one_in_n(gr.sizeof_float*1, int(samp_rate*meta_rate))
         self.blocks_keep_one_in_n_0 = blocks.keep_one_in_n(gr.sizeof_float*1, int(samp_rate/8*meta_rate))
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/zleffke/captures/rocksat/mgs/MGS_20170617_151017.750783_UTC_500k.fc32', True)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/captures/rocksat/testing/trimmed_500k.fc32', True)
         self.blocks_file_sink_1_0 = blocks.file_sink(gr.sizeof_float*1, rfo_fp, False)
         self.blocks_file_sink_1_0.set_unbuffered(False)
         self.blocks_file_sink_1 = blocks.file_sink(gr.sizeof_float*1, snr_fp, False)
@@ -522,8 +523,7 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.blocks_divide_xx_0, 0))
         self.connect((self.blocks_complex_to_mag_squared_0_0, 0), (self.blocks_divide_xx_0, 1))
         self.connect((self.blocks_divide_xx_0, 0), (self.blocks_nlog10_ff_0_1, 0))
-        self.connect((self.blocks_file_source_0, 0), (self.blks2_selector_0, 0))
-        self.connect((self.blocks_file_source_0, 0), (self.freq_xlating_fir_filter_xxx_0, 0))
+        self.connect((self.blocks_file_source_0, 0), (self.blocks_throttle_0, 0))
         self.connect((self.blocks_keep_one_in_n_0, 0), (self.blks2_selector_0_0_0, 0))
         self.connect((self.blocks_keep_one_in_n_0_0, 0), (self.blks2_selector_0_0, 0))
         self.connect((self.blocks_moving_average_xx_0, 0), (self.blocks_keep_one_in_n_0_0, 0))
@@ -537,6 +537,8 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_nlog10_ff_0_1, 0), (self.blocks_moving_average_xx_0_0_1, 0))
         self.connect((self.blocks_pack_k_bits_bb_0, 0), (self.digital_gmsk_mod_0, 0))
         self.connect((self.blocks_pdu_to_tagged_stream_0_0, 0), (self.digital_scrambler_bb_0, 0))
+        self.connect((self.blocks_throttle_0, 0), (self.blks2_selector_0, 0))
+        self.connect((self.blocks_throttle_0, 0), (self.freq_xlating_fir_filter_xxx_0, 0))
         self.connect((self.digital_binary_slicer_fb_0, 0), (self.digital_diff_decoder_bb_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.blocks_complex_to_mag_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.mapper_demapper_soft_0, 0))
@@ -648,6 +650,7 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate )
         self.low_pass_filter_0_0.set_taps(firdes.low_pass(1, self.samp_rate, (self.baud *(1+self.alpha) )/2, 1000, firdes.WIN_HAMMING, 6.76))
         self.set_iq_fn("{:s}_{:s}_{:s}k.fc32".format(self.gs_name, self.ts_str, str(int(self.samp_rate)/1000)))
+        self.blocks_throttle_0.set_sample_rate(self.samp_rate)
         self.blocks_keep_one_in_n_0_0.set_n(int(self.samp_rate*self.meta_rate))
         self.blocks_keep_one_in_n_0.set_n(int(self.samp_rate/8*self.meta_rate))
         self.analog_sig_source_x_0.set_sampling_freq(self.samp_rate)

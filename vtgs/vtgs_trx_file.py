@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: VTGS Rocksat-X 2017 Transceiver v2.0
-# Generated: Tue Aug  8 19:36:27 2017
+# Generated: Sat Aug 12 12:10:38 2017
 ##################################################
 
 if __name__ == '__main__':
@@ -41,7 +41,7 @@ from gnuradio import qtgui
 
 class vtgs_trx_file(gr.top_block, Qt.QWidget):
 
-    def __init__(self, gs_name='VTGS', ip='0.0.0.0', iq_file='./rocksat_125kbd_500ksps_date_comment.dat', meta_rate=.1, port='52001', record_iq=0, record_rfo=0, record_snr=0, rfo_file='./rocksat_rfo_date_comment.meta', snr_file='./rocksat_snr_date_comment.meta', tx_freq=1265e6, tx_offset=250e3):
+    def __init__(self, gs_name='VTGS', ip='0.0.0.0', meta_rate=.1, port='52003', record_iq=0, record_rfo=0, record_snr=0, tx_freq=1265e6, tx_offset=250e3):
         gr.top_block.__init__(self, "VTGS Rocksat-X 2017 Transceiver v2.0")
         Qt.QWidget.__init__(self)
         self.setWindowTitle("VTGS Rocksat-X 2017 Transceiver v2.0")
@@ -70,14 +70,11 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         ##################################################
         self.gs_name = gs_name
         self.ip = ip
-        self.iq_file = iq_file
         self.meta_rate = meta_rate
         self.port = port
         self.record_iq = record_iq
         self.record_rfo = record_rfo
         self.record_snr = record_snr
-        self.rfo_file = rfo_file
-        self.snr_file = snr_file
         self.tx_freq = tx_freq
         self.tx_offset = tx_offset
 
@@ -87,19 +84,23 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         self.ts_str = ts_str = dt.strftime(dt.utcnow(), "%Y%m%d_%H%M%S.%f" )+'_UTC'
         self.samp_rate = samp_rate = 500e3
         self.baud = baud = 125e3
+        self.snr_fn = snr_fn = "{:s}_{:s}.snr".format(gs_name, ts_str)
         self.samps_per_symb = samps_per_symb = int(samp_rate/baud)
         self.rx_freq = rx_freq = 2395e6
+        self.rfo_fn = rfo_fn = "{:s}_{:s}.rfo".format(gs_name, ts_str)
         self.iq_fn = iq_fn = "{:s}_{:s}_{:s}k.fc32".format(gs_name, ts_str, str(int(samp_rate)/1000))
         self.alpha = alpha = 0.5
         self.uplink_label = uplink_label = ''
         self.tx_gain = tx_gain = 25
         self.tx_correct = tx_correct = 2000
+        self.snr_fp = snr_fp = "/captures/rocksat/{:s}".format(snr_fn)
         self.rx_offset = rx_offset = 250e3
         self.rx_gain = rx_gain = 1
         self.rx_freq_lbl = rx_freq_lbl = "{:4.3f}".format(rx_freq/1e6)
 
         self.rrc_filter_taps = rrc_filter_taps = firdes.root_raised_cosine(32, 1.0, 1.0/(samps_per_symb*32), alpha, samps_per_symb*32)
 
+        self.rfo_fp = rfo_fp = "/captures/rocksat/{:s}".format(rfo_fn)
         self.mult = mult = (samp_rate)/2/3.141593
 
         self.lpf_taps = lpf_taps = firdes.low_pass(1.0, samp_rate, samp_rate/2, 1000, firdes.WIN_HAMMING, 6.76)
@@ -125,7 +126,7 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         if None:
           self._uplink_label_formatter = None
         else:
-          self._uplink_label_formatter = lambda x: x
+          self._uplink_label_formatter = lambda x: str(x)
 
         self._uplink_label_tool_bar.addWidget(Qt.QLabel('TX MSG'+": "))
         self._uplink_label_label = Qt.QLabel(str(self._uplink_label_formatter(self.uplink_label)))
@@ -146,7 +147,7 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         if None:
           self._rx_freq_lbl_formatter = None
         else:
-          self._rx_freq_lbl_formatter = lambda x: x
+          self._rx_freq_lbl_formatter = lambda x: str(x)
 
         self._rx_freq_lbl_tool_bar.addWidget(Qt.QLabel('RX Freq [MHz]'+": "))
         self._rx_freq_lbl_label = Qt.QLabel(str(self._rx_freq_lbl_formatter(self.rx_freq_lbl)))
@@ -449,10 +450,11 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         self.digital_binary_slicer_fb_0 = digital.binary_slicer_fb()
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
         self.blocks_socket_pdu_0_2 = blocks.socket_pdu("UDP_SERVER", ip, '52002', 1024, False)
-        self.blocks_socket_pdu_0_1 = blocks.socket_pdu("TCP_SERVER", ip, '52003', 1024, False)
-        self.blocks_socket_pdu_0 = blocks.socket_pdu("UDP_CLIENT", ip, port, 1024, False)
+        self.blocks_socket_pdu_0_1 = blocks.socket_pdu("TCP_SERVER", ip, port, 1024, False)
         self.blocks_pdu_to_tagged_stream_0_0 = blocks.pdu_to_tagged_stream(blocks.byte_t, 'packet_len')
         self.blocks_pack_k_bits_bb_0 = blocks.pack_k_bits_bb(8)
+        self.blocks_null_sink_0_0_0 = blocks.null_sink(gr.sizeof_float*1)
+        self.blocks_null_sink_0_0 = blocks.null_sink(gr.sizeof_float*1)
         self.blocks_null_sink_0 = blocks.null_sink(gr.sizeof_gr_complex*1)
         self.blocks_nlog10_ff_0_1 = blocks.nlog10_ff(10, 1, 0)
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
@@ -461,7 +463,13 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         self.blocks_moving_average_xx_0_0_1 = blocks.moving_average_ff(100000, 0.00001, 4000)
         self.blocks_moving_average_xx_0_0 = blocks.moving_average_ff(1000, 0.001, 4000)
         self.blocks_moving_average_xx_0 = blocks.moving_average_ff(100000, 0.00001, 4000)
+        self.blocks_keep_one_in_n_0_0 = blocks.keep_one_in_n(gr.sizeof_float*1, int(samp_rate*meta_rate))
+        self.blocks_keep_one_in_n_0 = blocks.keep_one_in_n(gr.sizeof_float*1, int(samp_rate/8*meta_rate))
         self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/captures/rocksat/testing/trimmed_500k.fc32', True)
+        self.blocks_file_sink_1_0 = blocks.file_sink(gr.sizeof_float*1, rfo_fp, False)
+        self.blocks_file_sink_1_0.set_unbuffered(False)
+        self.blocks_file_sink_1 = blocks.file_sink(gr.sizeof_float*1, snr_fp, False)
+        self.blocks_file_sink_1.set_unbuffered(False)
         self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_gr_complex*1, iq_fp, False)
         self.blocks_file_sink_0.set_unbuffered(False)
         self.blocks_divide_xx_0 = blocks.divide_ff(1)
@@ -469,6 +477,20 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         self.blocks_complex_to_mag_squared_0 = blocks.complex_to_mag_squared(1)
         self.blocks_complex_to_mag_0 = blocks.complex_to_mag(1)
         self.blocks_add_const_vxx_0 = blocks.add_const_vff((-1, ))
+        self.blks2_selector_0_0_0 = grc_blks2.selector(
+        	item_size=gr.sizeof_float*1,
+        	num_inputs=1,
+        	num_outputs=2,
+        	input_index=0,
+        	output_index=int(record_snr),
+        )
+        self.blks2_selector_0_0 = grc_blks2.selector(
+        	item_size=gr.sizeof_float*1,
+        	num_inputs=1,
+        	num_outputs=2,
+        	input_index=0,
+        	output_index=int(record_rfo),
+        )
         self.blks2_selector_0 = grc_blks2.selector(
         	item_size=gr.sizeof_gr_complex*1,
         	num_inputs=1,
@@ -487,20 +509,27 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         self.msg_connect((self.blocks_socket_pdu_0_2, 'pdus'), (self.kiss_hdlc_framer_0, 'in'))
         self.msg_connect((self.kiss_hdlc_framer_0, 'out'), (self.blocks_pdu_to_tagged_stream_0_0, 'pdus'))
         self.msg_connect((self.pyqt_text_input_0, 'pdus'), (self.kiss_hdlc_framer_0, 'in'))
-        self.msg_connect((self.vtgs_ao40_decoder_0_0, 'valid_frames'), (self.blocks_socket_pdu_0, 'pdus'))
         self.msg_connect((self.vtgs_ao40_decoder_0_0, 'valid_frames'), (self.blocks_socket_pdu_0_1, 'pdus'))
         self.connect((self.analog_agc2_xx_0_0, 0), (self.digital_costas_loop_cc_0_0, 0))
         self.connect((self.analog_sig_source_x_0, 0), (self.blocks_multiply_xx_0, 1))
         self.connect((self.blks2_selector_0, 1), (self.blocks_file_sink_0, 0))
         self.connect((self.blks2_selector_0, 0), (self.blocks_null_sink_0, 0))
+        self.connect((self.blks2_selector_0_0, 1), (self.blocks_file_sink_1_0, 0))
+        self.connect((self.blks2_selector_0_0, 0), (self.blocks_null_sink_0_0, 0))
+        self.connect((self.blks2_selector_0_0_0, 1), (self.blocks_file_sink_1, 0))
+        self.connect((self.blks2_selector_0_0_0, 0), (self.blocks_null_sink_0_0_0, 0))
         self.connect((self.blocks_add_const_vxx_0, 0), (self.qtgui_number_sink_2, 0))
         self.connect((self.blocks_complex_to_mag_0, 0), (self.blocks_moving_average_xx_0_0, 0))
         self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.blocks_divide_xx_0, 0))
         self.connect((self.blocks_complex_to_mag_squared_0_0, 0), (self.blocks_divide_xx_0, 1))
         self.connect((self.blocks_divide_xx_0, 0), (self.blocks_nlog10_ff_0_1, 0))
         self.connect((self.blocks_file_source_0, 0), (self.blocks_throttle_0, 0))
+        self.connect((self.blocks_keep_one_in_n_0, 0), (self.blks2_selector_0_0_0, 0))
+        self.connect((self.blocks_keep_one_in_n_0_0, 0), (self.blks2_selector_0_0, 0))
+        self.connect((self.blocks_moving_average_xx_0, 0), (self.blocks_keep_one_in_n_0_0, 0))
         self.connect((self.blocks_moving_average_xx_0, 0), (self.qtgui_number_sink_0, 0))
         self.connect((self.blocks_moving_average_xx_0_0, 0), (self.blocks_add_const_vxx_0, 0))
+        self.connect((self.blocks_moving_average_xx_0_0_1, 0), (self.blocks_keep_one_in_n_0, 0))
         self.connect((self.blocks_moving_average_xx_0_0_1, 0), (self.qtgui_number_sink_0_0_0_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_moving_average_xx_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.rational_resampler_xxx_2, 0))
@@ -543,6 +572,8 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
 
     def set_gs_name(self, gs_name):
         self.gs_name = gs_name
+        self.set_snr_fn("{:s}_{:s}.snr".format(self.gs_name, self.ts_str))
+        self.set_rfo_fn("{:s}_{:s}.rfo".format(self.gs_name, self.ts_str))
         self.set_iq_fn("{:s}_{:s}_{:s}k.fc32".format(self.gs_name, self.ts_str, str(int(self.samp_rate)/1000)))
 
     def get_ip(self):
@@ -551,17 +582,13 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
     def set_ip(self, ip):
         self.ip = ip
 
-    def get_iq_file(self):
-        return self.iq_file
-
-    def set_iq_file(self, iq_file):
-        self.iq_file = iq_file
-
     def get_meta_rate(self):
         return self.meta_rate
 
     def set_meta_rate(self, meta_rate):
         self.meta_rate = meta_rate
+        self.blocks_keep_one_in_n_0_0.set_n(int(self.samp_rate*self.meta_rate))
+        self.blocks_keep_one_in_n_0.set_n(int(self.samp_rate/8*self.meta_rate))
 
     def get_port(self):
         return self.port
@@ -581,24 +608,14 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
 
     def set_record_rfo(self, record_rfo):
         self.record_rfo = record_rfo
+        self.blks2_selector_0_0.set_output_index(int(int(self.record_rfo)))
 
     def get_record_snr(self):
         return self.record_snr
 
     def set_record_snr(self, record_snr):
         self.record_snr = record_snr
-
-    def get_rfo_file(self):
-        return self.rfo_file
-
-    def set_rfo_file(self, rfo_file):
-        self.rfo_file = rfo_file
-
-    def get_snr_file(self):
-        return self.snr_file
-
-    def set_snr_file(self, snr_file):
-        self.snr_file = snr_file
+        self.blks2_selector_0_0_0.set_output_index(int(int(self.record_snr)))
 
     def get_tx_freq(self):
         return self.tx_freq
@@ -617,6 +634,8 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
 
     def set_ts_str(self, ts_str):
         self.ts_str = ts_str
+        self.set_snr_fn("{:s}_{:s}.snr".format(self.gs_name, self.ts_str))
+        self.set_rfo_fn("{:s}_{:s}.rfo".format(self.gs_name, self.ts_str))
         self.set_iq_fn("{:s}_{:s}_{:s}k.fc32".format(self.gs_name, self.ts_str, str(int(self.samp_rate)/1000)))
 
     def get_samp_rate(self):
@@ -632,6 +651,8 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         self.low_pass_filter_0_0.set_taps(firdes.low_pass(1, self.samp_rate, (self.baud *(1+self.alpha) )/2, 1000, firdes.WIN_HAMMING, 6.76))
         self.set_iq_fn("{:s}_{:s}_{:s}k.fc32".format(self.gs_name, self.ts_str, str(int(self.samp_rate)/1000)))
         self.blocks_throttle_0.set_sample_rate(self.samp_rate)
+        self.blocks_keep_one_in_n_0_0.set_n(int(self.samp_rate*self.meta_rate))
+        self.blocks_keep_one_in_n_0.set_n(int(self.samp_rate/8*self.meta_rate))
         self.analog_sig_source_x_0.set_sampling_freq(self.samp_rate)
 
     def get_baud(self):
@@ -641,6 +662,13 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
         self.baud = baud
         self.set_samps_per_symb(int(self.samp_rate/self.baud))
         self.low_pass_filter_0_0.set_taps(firdes.low_pass(1, self.samp_rate, (self.baud *(1+self.alpha) )/2, 1000, firdes.WIN_HAMMING, 6.76))
+
+    def get_snr_fn(self):
+        return self.snr_fn
+
+    def set_snr_fn(self, snr_fn):
+        self.snr_fn = snr_fn
+        self.set_snr_fp("/captures/rocksat/{:s}".format(self.snr_fn))
 
     def get_samps_per_symb(self):
         return self.samps_per_symb
@@ -654,6 +682,13 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
     def set_rx_freq(self, rx_freq):
         self.rx_freq = rx_freq
         self.set_rx_freq_lbl(self._rx_freq_lbl_formatter("{:4.3f}".format(self.rx_freq/1e6)))
+
+    def get_rfo_fn(self):
+        return self.rfo_fn
+
+    def set_rfo_fn(self, rfo_fn):
+        self.rfo_fn = rfo_fn
+        self.set_rfo_fp("/captures/rocksat/{:s}".format(self.rfo_fn))
 
     def get_iq_fn(self):
         return self.iq_fn
@@ -674,7 +709,7 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
 
     def set_uplink_label(self, uplink_label):
         self.uplink_label = uplink_label
-        Qt.QMetaObject.invokeMethod(self._uplink_label_label, "setText", Qt.Q_ARG("QString", str(self.uplink_label)))
+        Qt.QMetaObject.invokeMethod(self._uplink_label_label, "setText", Qt.Q_ARG("QString", self.uplink_label))
 
     def get_tx_gain(self):
         return self.tx_gain
@@ -687,6 +722,13 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
 
     def set_tx_correct(self, tx_correct):
         self.tx_correct = tx_correct
+
+    def get_snr_fp(self):
+        return self.snr_fp
+
+    def set_snr_fp(self, snr_fp):
+        self.snr_fp = snr_fp
+        self.blocks_file_sink_1.open(self.snr_fp)
 
     def get_rx_offset(self):
         return self.rx_offset
@@ -705,7 +747,7 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
 
     def set_rx_freq_lbl(self, rx_freq_lbl):
         self.rx_freq_lbl = rx_freq_lbl
-        Qt.QMetaObject.invokeMethod(self._rx_freq_lbl_label, "setText", Qt.Q_ARG("QString", str(self.rx_freq_lbl)))
+        Qt.QMetaObject.invokeMethod(self._rx_freq_lbl_label, "setText", Qt.Q_ARG("QString", self.rx_freq_lbl))
 
     def get_rrc_filter_taps(self):
         return self.rrc_filter_taps
@@ -713,6 +755,13 @@ class vtgs_trx_file(gr.top_block, Qt.QWidget):
     def set_rrc_filter_taps(self, rrc_filter_taps):
         self.rrc_filter_taps = rrc_filter_taps
         self.digital_pfb_clock_sync_xxx_0_0.update_taps((self.rrc_filter_taps))
+
+    def get_rfo_fp(self):
+        return self.rfo_fp
+
+    def set_rfo_fp(self, rfo_fp):
+        self.rfo_fp = rfo_fp
+        self.blocks_file_sink_1_0.open(self.rfo_fp)
 
     def get_mult(self):
         return self.mult
@@ -765,14 +814,11 @@ def argument_parser():
         "-a", "--ip", dest="ip", type="string", default='0.0.0.0',
         help="Set 0.0.0.0 [default=%default]")
     parser.add_option(
-        "", "--iq-file", dest="iq_file", type="string", default='./rocksat_125kbd_500ksps_date_comment.dat',
-        help="Set iq_file [default=%default]")
-    parser.add_option(
         "", "--meta-rate", dest="meta_rate", type="eng_float", default=eng_notation.num_to_str(.1),
         help="Set meta_rate [default=%default]")
     parser.add_option(
-        "-p", "--port", dest="port", type="string", default='52001',
-        help="Set 52001 [default=%default]")
+        "-p", "--port", dest="port", type="string", default='52003',
+        help="Set 52003 [default=%default]")
     parser.add_option(
         "", "--record-iq", dest="record_iq", type="intx", default=0,
         help="Set record_iq [default=%default]")
@@ -782,12 +828,6 @@ def argument_parser():
     parser.add_option(
         "", "--record-snr", dest="record_snr", type="intx", default=0,
         help="Set record_snr [default=%default]")
-    parser.add_option(
-        "", "--rfo-file", dest="rfo_file", type="string", default='./rocksat_rfo_date_comment.meta',
-        help="Set rfo_file [default=%default]")
-    parser.add_option(
-        "", "--snr-file", dest="snr_file", type="string", default='./rocksat_snr_date_comment.meta',
-        help="Set snr_file [default=%default]")
     parser.add_option(
         "", "--tx-freq", dest="tx_freq", type="eng_float", default=eng_notation.num_to_str(1265e6),
         help="Set tx_freq [default=%default]")
@@ -807,7 +847,7 @@ def main(top_block_cls=vtgs_trx_file, options=None):
         Qt.QApplication.setGraphicsSystem(style)
     qapp = Qt.QApplication(sys.argv)
 
-    tb = top_block_cls(gs_name=options.gs_name, ip=options.ip, iq_file=options.iq_file, meta_rate=options.meta_rate, port=options.port, record_iq=options.record_iq, record_rfo=options.record_rfo, record_snr=options.record_snr, rfo_file=options.rfo_file, snr_file=options.snr_file, tx_freq=options.tx_freq, tx_offset=options.tx_offset)
+    tb = top_block_cls(gs_name=options.gs_name, ip=options.ip, meta_rate=options.meta_rate, port=options.port, record_iq=options.record_iq, record_rfo=options.record_rfo, record_snr=options.record_snr, tx_freq=options.tx_freq, tx_offset=options.tx_offset)
     tb.start()
     tb.show()
 
